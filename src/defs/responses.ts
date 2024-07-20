@@ -29,7 +29,7 @@ export interface IResponseBodies {
   username_or_email_already_registered: IResponseBody;
   username_already_registered: IResponseBody;
   email_already_registered: IResponseBody;
-  caught_error: IResponseBody;
+  caught_error: (error: unknown) => IResponseBody;
   success: (user?: ISanitizedUser | ISanitizedUser[]) => IResponseBody;
 }
 
@@ -130,14 +130,16 @@ export const responses: IResponseBodies = {
       user: undefined,
     },
   },
-  caught_error: {
+  caught_error: (error: any) => ({
     message: EMessageType.error,
     data: {
-      description: "An error was caught.",
+      description: `Caught error: " ${
+        error instanceof Error ? error.message : error
+      }`,
       code: 1012,
       user: undefined,
     },
-  },
+  }),
   success: (user?: ISanitizedUser | ISanitizedUser[]) => ({
     message: EMessageType.success,
     data: {

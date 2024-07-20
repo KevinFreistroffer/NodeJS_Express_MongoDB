@@ -148,7 +148,7 @@ router.post(
         return res.json(responses.user_not_found());
       }
     } catch (error) {
-      return res.status(500).json(createCaughtErrorResponse(error));
+      return res.status(500).json(responses.caught_error(error));
     }
   }
 );

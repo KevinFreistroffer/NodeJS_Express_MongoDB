@@ -93,7 +93,7 @@ router.post(
     } catch (error) {
       console.log("Error finding a user while updating users journal", error);
 
-      res.json(responses.caught_error);
+      res.json(responses.caught_error(error));
     }
   }
 );

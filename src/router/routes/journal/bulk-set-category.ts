@@ -82,7 +82,7 @@ router.post(
         res.send(responses.success());
       }
     } catch (error) {
-      return res.status(500).json(responses.caught_error);
+      return res.status(500).json(responses.caught_error(error));
     }
   }
 );

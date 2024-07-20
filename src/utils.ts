@@ -20,16 +20,3 @@ export const getDB = async () => {};
 export const checkForForbiddenFields = (doc: Document) => {
   const forbiddenFields = ["password"];
 };
-
-export const createCaughtErrorResponse = (error: any) => {
-  console.log(typeof error, error instanceof Error);
-  return {
-    ...responses.caught_error,
-    data: {
-      ...responses.caught_error.data,
-      description: `Caught error: " ${
-        error instanceof Error ? error.message : error
-      }`,
-    },
-  };
-};

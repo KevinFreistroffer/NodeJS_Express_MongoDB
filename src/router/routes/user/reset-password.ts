@@ -80,7 +80,7 @@ router.post(
 
       return res.json(responses.success());
     } catch (error) {
-      return res.status(500).json(responses.caught_error);
+      return res.status(500).json(responses.caught_error(error));
     }
   }
 );

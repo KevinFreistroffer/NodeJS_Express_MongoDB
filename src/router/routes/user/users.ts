@@ -52,7 +52,7 @@ router.get(
     } catch (error) {
       console.log("[/users] Caught error. Error: ", error);
 
-      return res.status(500).json(responses.caught_error);
+      return res.status(500).json(responses.caught_error(error));
     }
   }
 );

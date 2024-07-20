@@ -132,7 +132,7 @@ router.post(
     } catch (error) {
       console.log("[SignUp] err.", error);
 
-      return res.status(500).json(responses.caught_error);
+      return res.status(500).json(responses.caught_error(error));
     }
   }
 );
