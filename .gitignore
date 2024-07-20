@@ -1,0 +1,6 @@
+/node_modules
+/src/config/index.js
+/src/config/*
+/built
+/built/config
+/built/config/*
