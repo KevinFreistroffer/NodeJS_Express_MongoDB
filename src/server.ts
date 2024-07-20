@@ -10,7 +10,6 @@ import mongoose, { Collection } from "mongoose";
 import passport from "passport";
 import cors from "cors";
 import debug from "debug";
-// import passportGoogleOAuth20 from "passport-google-oauth20";
 import { getDBURI } from "./utils";
 import { MongodbAdapter } from "@lucia-auth/adapter-mongodb";
 // const cluster = require("cluster");
@@ -153,5 +152,4 @@ app.listen(config.port, () => {
   );
 });
 
-module.exports = app;
-// }
+export default app;
