@@ -46,7 +46,7 @@ router.post(
       if (!validatedFields.isEmpty()) {
         console.log("[Journal/Create] Validation failed");
 
-        return res.status(422).json(responses.missing_body_fields);
+        return res.status(422).json(responses.missing_body_fields());
       }
 
       if (config.online) {

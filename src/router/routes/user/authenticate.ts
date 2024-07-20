@@ -27,7 +27,7 @@ router.post(
     try {
       const validatedErrors = validationResult(req).array();
       if (validatedErrors.length) {
-        res.status(422).json(responses.missing_body_fields);
+        res.status(422).json(responses.missing_body_fields());
 
         return;
       }
@@ -85,7 +85,7 @@ router.post(
                  * Invalid password
                  *------------------------------------------------*/
                 if (!validPassword) {
-                  return res.status(200).json(responses.invalid_password);
+                  return res.status(200).json(responses.invalid_password());
                 }
 
                 /*--------------------------------------------------

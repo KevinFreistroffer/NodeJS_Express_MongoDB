@@ -42,7 +42,7 @@ router.post(
        *------------------------------------------------*/
       console.log("Email is registered.");
       console.log("Found doc id", doc._id);
-      return res.json(responses.email_already_registered);
+      return res.json(responses.email_already_registered());
     } catch (error) {
       console.log("Error finding user by email. Error:", error);
       return res.status(500).json(responses.caught_error(error));

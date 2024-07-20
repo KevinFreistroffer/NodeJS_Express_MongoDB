@@ -28,7 +28,7 @@ router.get(
         const doc = await User.find().exec();
 
         if (!doc) {
-          return res.json(responses.users_not_found);
+          return res.json(responses.users_not_found());
         }
 
         return res.json({

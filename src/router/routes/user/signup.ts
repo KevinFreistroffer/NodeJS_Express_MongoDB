@@ -51,7 +51,7 @@ router.post(
       const validatedFields = validationResult(req);
 
       if (!validatedFields.isEmpty()) {
-        return res.status(422).json(responses.missing_body_fields);
+        return res.status(422).json(responses.missing_body_fields());
       }
 
       const { username, userId, email, password } = req.body;
@@ -72,7 +72,7 @@ router.post(
         usernameAvailable = username === doc.username;
         emailAvailable = email === doc.email;
 
-        return res.json(responses.username_or_email_already_registered);
+        return res.json(responses.username_or_email_already_registered());
       }
 
       /* ----------------------------------------------------------------

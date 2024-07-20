@@ -18,7 +18,6 @@ import {
 } from "../../../../src/defs/responses";
 import { EMessageType } from "../../../defs/enums";
 import { ISanitizedUser, IUser, IUserDoc } from "../../../defs/interfaces";
-import { createCaughtErrorResponse } from "../../../utils";
 
 const router = express.Router();
 
@@ -57,7 +56,7 @@ router.post(
         : true;
 
       if (validationResult(req).array().length || !validStaySignedIn) {
-        return res.status(422).json(responses.missing_body_fields);
+        return res.status(422).json(responses.missing_body_fields());
       }
 
       const { usernameOrEmail, password, staySignedIn } = req.body;
@@ -119,6 +118,7 @@ router.post(
               ...responses.success(),
               data: {
                 ...responses.success().data,
+                user: doc,
                 jwtToken,
               },
             });
@@ -138,7 +138,7 @@ router.post(
           ) {
             return res
               .status(200)
-              .json(responses.invalid_usernameOrEmail_and_password);
+              .json(responses.invalid_usernameOrEmail_and_password());
           }
 
           console.log("[Offline] Successful login");

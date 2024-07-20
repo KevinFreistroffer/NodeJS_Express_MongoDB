@@ -24,7 +24,7 @@ router.post(
         const validatedErrors = validationResult(req).array();
 
         if (validatedErrors.length) {
-          return res.status(422).json(responses.missing_body_fields);
+          return res.status(422).json(responses.missing_body_fields());
         }
 
         // Look for a user based on their email

@@ -49,7 +49,7 @@ router.post(
       const validatedFields = validationResult(req);
       if (!validatedFields.isEmpty()) {
         console.log(validatedFields);
-        return res.status(422).json(responses.missing_body_fields);
+        return res.status(422).json(responses.missing_body_fields());
       }
       const { userId, journalIds, category } = req.body;
       console.log(req.body);

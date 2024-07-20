@@ -21,7 +21,7 @@ router.post(
       console.log(req.body.username);
 
       if (validatedErrors.length) {
-        return res.status(422).json(responses.missing_body_fields);
+        return res.status(422).json(responses.missing_body_fields());
       }
 
       const doc = await User.findOne({
@@ -32,14 +32,14 @@ router.post(
        * 'Username' is already registered to a user
        *------------------------------------------------*/
       if (!doc) {
-        return res.json(responses.username_already_registered);
+        return res.json(responses.username_already_registered());
       }
       /*--------------------------------------------------
        * 'Username' is NOT registered to a user.
        *------------------------------------------------*/
       console.log("Username is already registered.");
       console.log("doc", doc);
-      return res.json(responses.username_or_email_already_registered);
+      return res.json(responses.username_or_email_already_registered());
     } catch (error) {
       console.log("Error finding user by email", error);
 
