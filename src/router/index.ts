@@ -3,10 +3,7 @@
 import express from "express";
 import mongoose from "mongoose";
 
-module.exports = (
-  app: express.Express,
-  connection: Promise<typeof mongoose>
-) => {
+module.exports = (app: express.Express) => {
   app.use("/user/signup", require("./routes/user/signup"));
   app.use("/user/login", require("./routes/user/login"));
   // app.use("/user/auth/google", require("./routes/user/auth-google"));
