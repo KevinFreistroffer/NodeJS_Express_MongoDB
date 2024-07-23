@@ -1,3 +1,4 @@
+import { ObjectId } from "mongodb";
 import { Document, Types } from "mongoose";
 
 export interface IResponse {
@@ -14,14 +15,18 @@ export interface IJournal {
   selected: boolean;
 }
 
-export interface IJournalDoc extends IJournal, Document {}
+export interface IJournalDoc extends IJournal {
+  _id: ObjectId;
+}
 
 export interface ICategory {
   category: string;
   selected: boolean;
 }
 
-export interface ICategoryDoc extends ICategory, Document {}
+export interface ICategoryDoc extends ICategory {
+  _id: ObjectId;
+}
 
 export interface IUser {
   username: string;
@@ -35,6 +40,10 @@ export interface IUser {
   jwtToken: string;
   journals: IJournal[];
   journalCategories: ICategory[];
+}
+
+export interface IUserDoc extends IUser {
+  _id: ObjectId;
 }
 
 export interface ISanitizedUser

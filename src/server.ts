@@ -10,7 +10,6 @@ import mongoose, { Collection } from "mongoose";
 import passport from "passport";
 import cors from "cors";
 import debug from "debug";
-import { getDBURI } from "./utils";
 import { MongodbAdapter } from "@lucia-auth/adapter-mongodb";
 const { MongoClient, ServerApiVersion } = require("mongodb");
 // const cluster = require("cluster");
@@ -18,16 +17,6 @@ const { MongoClient, ServerApiVersion } = require("mongodb");
 // const GoogleStrategy = passportGoogleOAuth20.Strategy;
 const swaggerUi = require("swagger-ui-express");
 const swaggerSpec = require("../swagger-spec.json");
-
-const dbURI = getDBURI();
-
-const client = new MongoClient(dbURI, {
-  serverApi: {
-    version: ServerApiVersion.v1,
-    strict: true,
-    deprecationErrors: true,
-  },
-});
 
 // export default app;
 
@@ -43,7 +32,7 @@ export async function server() {
     // let mongooseConnection!: Promise<typeof mongoose>;
     const name = "NodeJS-Express";
     const app = express();
-    await client.connect();
+
     // const swaggerUiAssetPath = require("swagger-ui-dist").getAbsoluteFSPath();
     // console.log(swaggerUiAssetPath);
     debug(name);
@@ -59,9 +48,8 @@ export async function server() {
     // ------------------------------------------------
 
     if (config.online) {
-      await client.connect();
+      // await client.connect();
       // mongooseConnection = mongoose.connect(dbURI);
-
       // mongoose.connection.on("connected", () => {
       //   console.log("Mongoose connection CONNECTED");
       // });
@@ -74,7 +62,6 @@ export async function server() {
       //   console.log("Mongoose connection DISCONNECTED");
       //   mongoose.connect(dbURI);
       // });
-
       // const adapter = new MongodbAdapter(
       //   mongoose.connection.collection("sessions"),
       //   mongoose.connection.collection("users")
@@ -146,7 +133,7 @@ export async function server() {
     // ----------------------------------------------------
     process.on("SIGINT", async () => {
       if (config.online) {
-        await client.close();
+        // await client.close();
         // mongoose.connection.close();
         console.log("Closing Mongoose connection because node process ended.");
         process.exit(0);
@@ -167,7 +154,7 @@ export async function server() {
   } catch (error: any) {
     console.log(error.stack);
   } finally {
-    await client.close();
+    // await client.close();
   }
 }
 

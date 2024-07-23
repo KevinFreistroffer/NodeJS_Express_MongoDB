@@ -46,3 +46,10 @@ export const User: UserModel = mongoose.model<IUser, UserModel>(
   "user",
   UserSchema
 );
+
+export const UserProjection = {
+  username: 1,
+  email: 1,
+  journals: 1,
+  journalCategories: 1,
+};
