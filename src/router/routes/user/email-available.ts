@@ -6,6 +6,7 @@ import { Types } from "mongoose";
 import { has } from "lodash";
 import { body } from "express-validator";
 import { IResponseBody, responses } from "../../../defs/responses";
+import { usersCollection } from "../../../db";
 const { query, validationResult } = require("express-validator");
 const router = express.Router();
 
@@ -26,7 +27,8 @@ router.post(
       }
 
       const email = req.body.email;
-      const doc = await User.findOne({ emailNormalized: email }).exec();
+      const users = await usersCollection();
+      const doc = await users.findOne({ emailNormalized: email });
 
       /*--------------------------------------------------
        * User NOT found.

@@ -11,6 +11,7 @@ import { body, validationResult } from "express-validator";
 import { has } from "lodash";
 import { IUser } from "../../../defs/interfaces";
 import { IResponseBody, responses } from "../../../defs/responses";
+import { usersCollection } from "../../../db";
 const router = express.Router();
 
 router.delete(
@@ -22,7 +23,9 @@ router.delete(
       if (config.online) {
         // Find user by username or email
         // TODO: how to get the updated doc?
-        const doc = await User.deleteMany().exec();
+
+        const users = await usersCollection();
+        const doc = await users.deleteMany();
 
         if (!doc) {
           throw new Error("Users not deleted. No error. Not sure why.");

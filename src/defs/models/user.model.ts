@@ -36,7 +36,7 @@ export const UserSchema: Schema = new mongoose.Schema<IUser, UserModel>({
   emailNormalized: { type: String, required: true, select: false },
   password: { type: String, required: true, select: false },
   resetPasswordToken: { type: String, select: true },
-  resetPasswordExpires: { type: Date, select: true },
+  resetPasswordExpires: { type: Date, select: true, required: false },
   jwtToken: { type: String, select: true },
   journals: { type: [JournalSchema], select: true },
   journalCategories: { type: [CategorySchema], select: true },

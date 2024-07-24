@@ -1,7 +1,6 @@
 "use strict";
 
 import express from "express";
-import mongoose from "mongoose";
 
 module.exports = (app: express.Express) => {
   app.use("/user/signup", require("./routes/user/signup"));

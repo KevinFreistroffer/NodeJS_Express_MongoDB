@@ -1,5 +1,4 @@
 import { ObjectId } from "mongodb";
-import { Document, Types } from "mongoose";
 
 export interface IResponse {
   success: boolean;
@@ -35,7 +34,7 @@ export interface IUser {
   emailNormalized: string;
   password: string;
   resetPasswordToken: string;
-  resetPasswordExpires: Date;
+  resetPasswordExpires?: Date;
   verified?: boolean; // Todo should make this required and setup the email verification
   jwtToken: string;
   journals: IJournal[];

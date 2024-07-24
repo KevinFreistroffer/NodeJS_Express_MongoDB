@@ -4,18 +4,15 @@ import { users as mockUsers } from "../../../data/mock_users";
 import config from "../../../../src/config";
 import * as express from "express";
 import { verify, JwtPayload } from "jsonwebtoken";
-
 import * as bcrypt from "bcryptjs";
-import { User } from "../../../defs/models/user.model";
+import { User, UserProjection } from "../../../defs/models/user.model";
 import { Types } from "mongoose";
 import { body, validationResult } from "express-validator";
 import { has } from "lodash";
 import { IResponseBody, responses } from "../../../defs/responses";
+import { usersCollection } from "../../../db";
+import { isJwtPayload, verifyJWT } from "../../../utils";
 const router = express.Router();
-
-function isJwtPayload(arg: any): arg is JwtPayload {
-  return arg && arg.data;
-}
 
 router.post(
   "/",
@@ -37,6 +34,8 @@ router.post(
       console.log("request body data: ", req.body);
 
       if (config.online) {
+        const resp = await verifyJWT(token);
+        console.log(resp);
         verify(token, config.jwtSecret, async (decodeError, decoded) => {
           // Error decoding the JWT token
           if (decodeError) {
@@ -48,7 +47,13 @@ router.post(
               "Invalid JWT payload. The decoded value is not of type JwtPayload."
             );
           } else {
-            const doc = await User.findById(decoded.data).exec();
+            const users = await usersCollection();
+            // Find user by username or email
+            const doc = await users.findOne(
+              { _id: decoded.data },
+              { projection: UserProjection }
+            );
+
             console.log(
               "[Authenticate] found user by username or email: ",
               doc

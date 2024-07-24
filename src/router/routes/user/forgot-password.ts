@@ -8,6 +8,7 @@ import { Types } from "mongoose";
 import { body, validationResult } from "express-validator";
 import { ISanitizedUser } from "../../../defs/interfaces";
 import { IResponseBody, responses } from "../../../defs/responses";
+import { usersCollection } from "../../../db";
 const router = express.Router();
 let crypto = require("node:crypto");
 
@@ -27,13 +28,22 @@ router.post(
           return res.status(422).json(responses.missing_body_fields());
         }
 
+        const { email } = req.body;
+
         // Look for a user based on their email
-        const foundUser = await User.findOne({ email: req.body.email }).exec();
+        const users = await usersCollection();
+        const token = crypto.randomBytes(20).toString("hex");
+        const date = new Date();
+        date.setTime(date.getTime() + 3 * 60 * 60 * 1000); // 3 hours
+        const doc = await users.updateOne(
+          { email },
+          { resetPasswordToken: token, resetPasswordExpires: date }
+        );
         /*--------------------------------------------------
          * User NOT found
          *------------------------------------------------*/
-        if (!foundUser) {
-          console.log("no user found");
+        if (!doc.acknowledged) {
+          console.log("User not found.");
 
           return res.status(200).json(responses.user_not_found());
         }
@@ -42,15 +52,17 @@ router.post(
          * User found
          *------------------------------------------------*/
         // Generate a password reset token.
-        const token = crypto.randomBytes(20).toString("hex");
-        foundUser.resetPasswordToken = token;
-        // Set token expiration time to 3 hours.
-        const date = new Date();
-        const hoursToAdd = 3 * 60 * 60 * 1000; // 3 hours
-        date.setTime(date.getTime() + hoursToAdd);
-        foundUser.resetPasswordExpires = date;
-        // Save the user.
-        const savedUser = await foundUser.save();
+        // const token = crypto.randomBytes(20).toString("hex");
+        // foundUser.resetPasswordToken = token;
+        // // Set token expiration time to 3 hours.
+        // // const date = new Date();
+        // // const hoursToAdd = 3 * 60 * 60 * 1000; // 3 hours
+        // date.setTime(date.getTime() + hoursToAdd);
+        // foundUser.resetPasswordExpires = date;
+        // // Save the user.
+
+        // const savedUser = await foundUser.save().toArray();
+        // console.log(savedUser);
 
         /*--------------------------------------------------
          * Send the password reset email
@@ -65,9 +77,7 @@ router.post(
         const mailOptions = {
           from: `Password Reset 👥 <${config.email.fromEmail}>`, // sender address
           to: `${
-            config.env === EStage.DEVELOPMENT
-              ? config.email.fromEmail
-              : foundUser.email
+            config.env === EStage.DEVELOPMENT ? config.email.fromEmail : email
           }`, // list of receivers
           subject: "Reset Password", // Subject line
           text:

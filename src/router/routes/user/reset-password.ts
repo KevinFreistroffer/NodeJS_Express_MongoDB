@@ -7,6 +7,7 @@ import { body, validationResult } from "express-validator";
 import { Types } from "mongoose";
 import { User } from "../../../defs/models/user.model";
 import { IResponseBody, responses } from "../../../defs/responses";
+import { usersCollection } from "../../../db";
 const router = express.Router();
 const passwordHash = require("password-hash");
 const validatedToken = body("token")
@@ -37,20 +38,27 @@ router.post(
         return res.status(422).json(responses.missing_body_fields());
       }
 
-      const foundUser = await User.findOne({
-        resetPasswordToken: req.body.token,
-        resetPasswordExpires: { $gt: Date.now() },
-      }).exec();
-      console.log(foundUser);
+      // TODO: validate the JWT token. There needs to be an authentication step here prior to editing the password.
 
-      if (!foundUser) {
+      const hashedPassword = passwordHash.generate(req.body.password);
+      const users = await usersCollection();
+      const doc = await users.findOneAndUpdate(
+        {
+          resetPasswordToken: req.body.token,
+          resetPasswordExpires: { $gt: new Date(Date.now()) },
+        },
+        { password: hashedPassword }
+      );
+      console.log(doc);
+
+      if (!doc) {
         return res.status(200).json(responses.user_not_found());
       }
 
       // Updating user object
       // TODO: sanitize the password?
-      const hashedPassword = passwordHash.generate(req.body.password);
-      foundUser.password = hashedPassword;
+      // const hashedPassword = passwordHash.generate(req.body.password);
+      // foundUser.password = hashedPassword;
       // foundUser.resetPasswordToken = undefined;
       // foundUser.resetPasswordExpires = undefined;
 
@@ -67,7 +75,7 @@ router.post(
         text:
           "Hello,\n\n" +
           "This is a confirmation that the password for your account " +
-          foundUser.email +
+          doc.email +
           " has just been changed.\n",
       };
 

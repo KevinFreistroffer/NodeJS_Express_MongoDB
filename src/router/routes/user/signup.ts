@@ -1,12 +1,12 @@
 "use strict";
 
-import { Connection, Types } from "mongoose";
 import * as express from "express";
 import * as bcrypt from "bcryptjs";
-import { User } from "../../../defs/models/user.model";
+import { User, UserProjection } from "../../../defs/models/user.model";
 import { body, validationResult } from "express-validator";
-import { lucia } from "../../../config/db/lucia";
 import { IResponseBody, responses } from "../../../defs/responses";
+import { usersCollection } from "../../../db";
+import { IUser } from "../../../defs/interfaces";
 
 const router = express.Router();
 
@@ -57,76 +57,79 @@ router.post(
       const { username, userId, email, password } = req.body;
       console.log("[SignUp] req.body", req.body);
 
-      const doc = await User.findOne({
-        $or: [{ username: req.body.username }, { email: req.body.email }],
-      }).exec();
-      console.log("[SignUp] foundUser doc", doc);
+      const users = await usersCollection();
+      const doc = await users.findOne<IUser>({
+        $or: [{ username }, { email }],
+      });
 
       /*--------------------------------------------------
        *  'Username' and/or 'Email' are already registered
        *------------------------------------------------*/
-      if (doc !== null) {
-        console.log("Username and/or email already taken.", doc);
-
-        // Username already taken
-        usernameAvailable = username === doc.username;
-        emailAvailable = email === doc.email;
-
+      if (doc) {
         return res.json(responses.username_or_email_already_registered());
       }
 
-      /* ----------------------------------------------------------------
-       *  SUCCESS
-       *  No errors and the username and email aren't already registered.
-       *  Create and Save this new user
-       * --------------------------------------------------------------*/
+      const insertDoc = await users.insertOne({
+        username,
+        usernameNormalized: username.toLowerCase(),
+        email,
+        emailNormalized: email.toLowerCase(),
+        password,
+        resetPasswordToken: "",
+        // resetPasswordExpires: new Date(),
+        jwtToken: "",
+        journals: [],
+        journalCategories: [],
+      });
+
+      if (!insertDoc.acknowledged) {
+        console.log("Could not insert document.", doc);
+        throw new Error(
+          "Could not insert document. Username and email do NOT exist already."
+        );
+      }
+
+      // TODO: convert this to a reusable function, so the projection is not forgotten
+      const newUserDoc = await users.findOne(
+        { _id: insertDoc.insertedId },
+        { projection: UserProjection }
+      );
+
+      if (!newUserDoc) {
+        throw new Error("Error finding the newly created user's ObjectId.");
+      }
+
       const saltRounds = 10;
 
-      bcrypt.genSalt(saltRounds, (err, salt) => {
-        bcrypt.hash(password, salt, async (err, hash) => {
-          if (err) {
-            throw new Error("Error hashing the password. Error: " + err);
+      bcrypt.genSalt(saltRounds, (saltError, salt) => {
+        if (saltError) {
+          throw new Error("Error generating salt. Error: " + saltError);
+        }
+        bcrypt.hash(password, salt, async (hashError, hash) => {
+          if (hashError) {
+            throw new Error("Error hashing the password. Error: " + hashError);
           }
 
-          // Create
-          const newUser = new User({
-            username,
-            usernameNormalized: username.toLowerCase(),
-            email,
-            emailNormalized: email.toLowerCase(),
-            password: hash,
-            resetPasswordToken: "",
-            resetPasswordExpires: "",
-          });
+          /* ----------------------------------
+           *  SUCCESS
+           *  Successfully saved this new user.
+           * --------------------------------*/
+          console.log("[SignUp] Success creating a new user.");
+          console.log("Creating the lucias session.");
+          // const session = await lucia.createSession(
+          //   newUserDoc._id.toString(),
+          //   {}
+          // );
 
-          // Save
-          const createdUser = await newUser.save();
-          console.log("createdUser", createdUser);
+          // const sessionCookie = lucia
+          //   .createSessionCookie(session.id)
+          //   .serialize();
 
-          if (createdUser) {
-            /* ----------------------------------
-             *  SUCCESS
-             *  Successfully saved this new user.
-             * --------------------------------*/
-            console.log("[SignUp] Success creating a new user.");
+          // console.log(sessionCookie);
 
-            const session = await lucia.createSession(
-              createdUser._id.toString(),
-              {}
-            );
-
-            console.log("session", session);
-
-            const sessionCookie = lucia
-              .createSessionCookie(session.id)
-              .serialize();
-
-            console.log(sessionCookie);
-
-            return res
-              .appendHeader("Set-Cookie", sessionCookie)
-              .json(responses.success(createdUser));
-          }
+          return res
+            .appendHeader("Set-Cookie", "sessionCookie")
+            .json(responses.success(newUserDoc));
         });
       });
     } catch (error) {

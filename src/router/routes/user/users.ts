@@ -16,7 +16,7 @@ import {
   responses,
 } from "../../../defs/responses";
 import { ObjectId } from "mongodb";
-import { getDB, usersCollection } from "../../../db";
+import { getMongoClient, usersCollection } from "../../../db";
 const router = express.Router();
 
 router.get("/", async (req: express.Request, res: express.Response<any>) => {
@@ -24,7 +24,9 @@ router.get("/", async (req: express.Request, res: express.Response<any>) => {
     console.log("[/users] reached...");
 
     if (config.online) {
-      const users = await usersCollection();
+      const client = await getMongoClient();
+      await client.connect();
+      const users = usersCollection(client);
       // Find user by username or email
       const doc = await users.find().project(UserProjection).toArray();
       console.log(doc);

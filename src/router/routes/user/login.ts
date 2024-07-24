@@ -6,7 +6,7 @@ import * as express from "express";
 import * as bcrypt from "bcryptjs";
 import moment from "moment";
 import { sign } from "jsonwebtoken";
-import { User } from "../../../defs/models/user.model";
+import { User, UserProjection } from "../../../defs/models/user.model";
 
 import { Document, Query, Types } from "mongoose";
 import { body, checkExact, validationResult } from "express-validator";
@@ -18,6 +18,7 @@ import {
 } from "../../../../src/defs/responses";
 import { EMessageType } from "../../../defs/enums";
 import { ISanitizedUser, IUser, IUserDoc } from "../../../defs/interfaces";
+import { usersCollection } from "../../../db";
 
 const router = express.Router();
 
@@ -65,11 +66,13 @@ router.post(
       console.log("request body data: ", req.body, staySignedIn);
 
       if (config.online) {
-        const doc = await User.findOne({
-          $or: [{ username: usernameOrEmail }, { email: usernameOrEmail }],
-        })
-          .select("password")
-          .exec();
+        const users = await usersCollection();
+        const doc = await users.findOne(
+          {
+            $or: [{ username: usernameOrEmail }, { email: usernameOrEmail }],
+          },
+          { projection: UserProjection }
+        );
 
         console.log("[Login] found user by username or email: ", doc);
 

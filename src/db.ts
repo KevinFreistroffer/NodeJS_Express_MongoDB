@@ -1,5 +1,6 @@
-import { MongoClient, ServerApiVersion } from "mongodb";
+import { Collection, MongoClient, ServerApiVersion } from "mongodb";
 import config from "./config";
+import { ISession, IUser } from "./defs/interfaces";
 
 export const getDBURI = () => {
   return (
@@ -13,7 +14,7 @@ export const getDBURI = () => {
   );
 };
 
-export const getClient = (): MongoClient => {
+export const getMongoClient = (): MongoClient => {
   console.log(getDBURI());
   return new MongoClient(getDBURI(), {
     serverApi: {
@@ -35,14 +36,25 @@ export const getDB = async () => {
     },
   });
 
-  let conn = await client.connect();
-  let db = conn?.db("user-journal");
-  return db;
+  await client.connect();
+  return client.db("user-journal");
 };
 
-export const usersCollection = async () => {
-  const db = await getDB();
-  const users = await db.collection("users");
+const dbConnect = async () => {
+  const client = getMongoClient();
+  await client.connect();
+  return client;
+};
+
+export const usersCollection = (client: MongoClient) => {
+  const users = client.collection<IUser>("users") as Collection<IUser>;
 
   return users;
+};
+
+export const sessionsCollection = (client: MongoClient) => {
+  client.db("user-journal");
+  const sessions = db.collection<ISession>("sessions") as Collection<ISession>;
+
+  return sessions;
 };
