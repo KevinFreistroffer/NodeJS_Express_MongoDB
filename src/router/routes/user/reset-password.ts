@@ -4,10 +4,10 @@ import * as express from "express";
 import * as nodemailer from "nodemailer";
 import config from "../../../../src/config";
 import { body, validationResult } from "express-validator";
-import { Types } from "mongoose";
+
 import { User } from "../../../defs/models/user.model";
 import { IResponseBody, responses } from "../../../defs/responses";
-import { usersCollection } from "../../../db";
+import { getConnectedClient, usersCollection } from "../../../db";
 const router = express.Router();
 const passwordHash = require("password-hash");
 const validatedToken = body("token")
@@ -41,7 +41,8 @@ router.post(
       // TODO: validate the JWT token. There needs to be an authentication step here prior to editing the password.
 
       const hashedPassword = passwordHash.generate(req.body.password);
-      const users = await usersCollection();
+      const client = await getConnectedClient();
+      const users = await usersCollection(client);
       const doc = await users.findOneAndUpdate(
         {
           resetPasswordToken: req.body.token,

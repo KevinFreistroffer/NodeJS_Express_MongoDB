@@ -3,13 +3,7 @@
 import { users as mockUsers } from "../../../data/mock_users";
 import config from "../../../../src/config";
 import * as express from "express";
-import { verify, JwtPayload } from "jsonwebtoken";
 
-import * as bcrypt from "bcryptjs";
-import { User } from "../../../defs/models/user.model";
-import { Types } from "mongoose";
-import { body, validationResult } from "express-validator";
-import { has } from "lodash";
 const router = express.Router();
 
 router.get(

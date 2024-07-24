@@ -6,12 +6,12 @@ import * as express from "express";
 
 import * as bcrypt from "bcryptjs";
 import { User } from "../../../defs/models/user.model";
-import { Types } from "mongoose";
+
 import { body, validationResult } from "express-validator";
 import { has } from "lodash";
 import { IUser } from "../../../defs/interfaces";
 import { IResponseBody, responses } from "../../../defs/responses";
-import { usersCollection } from "../../../db";
+import { getConnectedClient, usersCollection } from "../../../db";
 const router = express.Router();
 
 router.delete(
@@ -23,8 +23,8 @@ router.delete(
       if (config.online) {
         // Find user by username or email
         // TODO: how to get the updated doc?
-
-        const users = await usersCollection();
+        const client = await getConnectedClient();
+        const users = usersCollection(client);
         const doc = await users.deleteMany();
 
         if (!doc) {

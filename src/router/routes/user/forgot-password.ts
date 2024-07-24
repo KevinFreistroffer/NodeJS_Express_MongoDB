@@ -4,11 +4,11 @@ import * as express from "express";
 import * as nodemailer from "nodemailer";
 import config, { EStage } from "../../../../src/config";
 import { User } from "../../../defs/models/user.model";
-import { Types } from "mongoose";
+
 import { body, validationResult } from "express-validator";
 import { ISanitizedUser } from "../../../defs/interfaces";
 import { IResponseBody, responses } from "../../../defs/responses";
-import { usersCollection } from "../../../db";
+import { getConnectedClient, usersCollection } from "../../../db";
 const router = express.Router();
 let crypto = require("node:crypto");
 
@@ -31,7 +31,8 @@ router.post(
         const { email } = req.body;
 
         // Look for a user based on their email
-        const users = await usersCollection();
+        const client = await getConnectedClient();
+        const users = await usersCollection(client);
         const token = crypto.randomBytes(20).toString("hex");
         const date = new Date();
         date.setTime(date.getTime() + 3 * 60 * 60 * 1000); // 3 hours

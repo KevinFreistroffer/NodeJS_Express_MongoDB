@@ -2,8 +2,12 @@ import { NextFunction, Request, Response } from "express";
 import jwt from "jsonwebtoken";
 import config from "./config";
 
+interface CustomRequest extends Request {
+  auth?: any;
+}
+
 export const verifyToken = (
-  req: Request,
+  req: CustomRequest,
   res: Response,
   next: NextFunction
 ) => {

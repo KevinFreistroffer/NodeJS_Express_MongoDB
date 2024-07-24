@@ -2,11 +2,11 @@
 
 import * as express from "express";
 import { User } from "../../../defs/models/user.model";
-import { Types } from "mongoose";
+
 import { has } from "lodash";
 import { body } from "express-validator";
 import { IResponseBody, responses } from "../../../defs/responses";
-import { usersCollection } from "../../../db";
+import { getConnectedClient, usersCollection } from "../../../db";
 const { query, validationResult } = require("express-validator");
 const router = express.Router();
 
@@ -27,7 +27,8 @@ router.post(
       }
 
       const email = req.body.email;
-      const users = await usersCollection();
+      const client = await getConnectedClient();
+      const users = await usersCollection(client);
       const doc = await users.findOne({ emailNormalized: email });
 
       /*--------------------------------------------------

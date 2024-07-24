@@ -7,9 +7,7 @@ import * as bcrypt from "bcryptjs";
 import moment from "moment";
 import { sign } from "jsonwebtoken";
 import { User, UserProjection } from "../../../defs/models/user.model";
-
-import { Document, Query, Types } from "mongoose";
-import { body, checkExact, validationResult } from "express-validator";
+import { body, validationResult } from "express-validator";
 import { has } from "lodash";
 import {
   IResponseBody as _IResponseBody,
@@ -18,7 +16,7 @@ import {
 } from "../../../../src/defs/responses";
 import { EMessageType } from "../../../defs/enums";
 import { ISanitizedUser, IUser, IUserDoc } from "../../../defs/interfaces";
-import { usersCollection } from "../../../db";
+import { getConnectedClient, usersCollection } from "../../../db";
 
 const router = express.Router();
 
@@ -66,7 +64,8 @@ router.post(
       console.log("request body data: ", req.body, staySignedIn);
 
       if (config.online) {
-        const users = await usersCollection();
+        const client = await getConnectedClient();
+        const users = await usersCollection(client);
         const doc = await users.findOne(
           {
             $or: [{ username: usernameOrEmail }, { email: usernameOrEmail }],

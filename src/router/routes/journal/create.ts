@@ -4,7 +4,7 @@ import config from "../../../../src/config";
 import express from "express";
 import moment from "moment";
 import { User } from "../../../defs/models/user.model";
-import { Types } from "mongoose";
+
 import { IResponse } from "../../../defs/interfaces";
 import { body, validationResult } from "express-validator";
 import { IResponseBody, responses } from "../../../defs/responses";

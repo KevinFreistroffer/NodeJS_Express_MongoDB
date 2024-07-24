@@ -2,11 +2,9 @@
 
 import * as express from "express";
 import { User, UserProjection } from "../../../defs/models/user.model";
-
-import { Types } from "mongoose";
 import { body, validationResult } from "express-validator";
 import { IResponseBody, responses } from "../../../defs/responses";
-import { usersCollection } from "../../../db";
+import { getConnectedClient, usersCollection } from "../../../db";
 const router = express.Router();
 
 router.post(
@@ -25,7 +23,8 @@ router.post(
         return res.status(422).json(responses.missing_body_fields());
       }
 
-      const users = await usersCollection();
+      const client = await getConnectedClient();
+      const users = await usersCollection(client);
       const doc = await users.findOne(
         {
           usernameNormalized: req.body.username.toLowerCase(),

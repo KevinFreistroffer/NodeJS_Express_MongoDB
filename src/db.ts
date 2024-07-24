@@ -14,19 +14,7 @@ export const getDBURI = () => {
   );
 };
 
-export const getMongoClient = (): MongoClient => {
-  console.log(getDBURI());
-  return new MongoClient(getDBURI(), {
-    serverApi: {
-      version: ServerApiVersion.v1,
-      strict: true,
-      deprecationErrors: true,
-    },
-    monitorCommands: true,
-  });
-};
-
-export const getDB = async () => {
+export const getConnectedClient = async () => {
   const uri = getDBURI();
   const client: MongoClient = new MongoClient(uri, {
     serverApi: {
@@ -37,24 +25,21 @@ export const getDB = async () => {
   });
 
   await client.connect();
-  return client.db("user-journal");
-};
-
-const dbConnect = async () => {
-  const client = getMongoClient();
-  await client.connect();
   return client;
 };
 
 export const usersCollection = (client: MongoClient) => {
-  const users = client.collection<IUser>("users") as Collection<IUser>;
+  const users = client
+    .db("user-journal")
+    .collection<IUser>("users") as Collection<IUser>;
 
   return users;
 };
 
 export const sessionsCollection = (client: MongoClient) => {
-  client.db("user-journal");
-  const sessions = db.collection<ISession>("sessions") as Collection<ISession>;
+  const sessions = client
+    .db("user-journal")
+    .collection<ISession>("sessions") as Collection<ISession>;
 
   return sessions;
 };

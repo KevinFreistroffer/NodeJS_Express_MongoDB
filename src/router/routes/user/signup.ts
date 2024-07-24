@@ -5,7 +5,7 @@ import * as bcrypt from "bcryptjs";
 import { User, UserProjection } from "../../../defs/models/user.model";
 import { body, validationResult } from "express-validator";
 import { IResponseBody, responses } from "../../../defs/responses";
-import { usersCollection } from "../../../db";
+import { getConnectedClient, usersCollection } from "../../../db";
 import { IUser } from "../../../defs/interfaces";
 
 const router = express.Router();
@@ -57,7 +57,8 @@ router.post(
       const { username, userId, email, password } = req.body;
       console.log("[SignUp] req.body", req.body);
 
-      const users = await usersCollection();
+      const client = await getConnectedClient();
+      const users = await usersCollection(client);
       const doc = await users.findOne<IUser>({
         $or: [{ username }, { email }],
       });

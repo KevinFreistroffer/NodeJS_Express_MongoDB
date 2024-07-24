@@ -3,7 +3,7 @@
 import config from "../../../../src/config";
 import * as express from "express";
 import { User } from "../../../defs/models/user.model";
-import { Types } from "mongoose";
+
 import { body, validationResult } from "express-validator";
 import { IResponse } from "../../../defs/interfaces";
 
