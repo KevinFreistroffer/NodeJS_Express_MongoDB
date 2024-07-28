@@ -1,9 +1,10 @@
 import * as express from "express";
-import { User } from "../../../defs/models/user.model";
-import mongoose, { Document, Types } from "mongoose";
 import { body, validationResult } from "express-validator";
 import { IJournal, ISanitizedUser, IUser } from "../../../defs/interfaces";
-const { mock, test } = require("node:test");
+import { Types } from "mongoose";
+import { getConnectedClient, usersCollection } from "../../../db";
+import { ObjectId } from "mongodb";
+
 const validatedUserId = body("userId") // TODO convert to zod?
   .notEmpty()
   .bail()
@@ -54,11 +55,26 @@ router.put(
       }
 
       const { userId, journalIds } = req.body;
-      const updatedDoc = await User.findOneAndUpdate(
-        { _id: userId },
-        { $pull: { journals: { _id: { $in: journalIds } } } },
-        { new: true }
+      const client = await getConnectedClient();
+      const users = usersCollection(client);
+      const updatedDoc = await users.updateOne(
+        { _id: new ObjectId(userId) },
+        {
+          $pull: {
+            journals: {
+              _id: {
+                $in: journalIds,
+              },
+            },
+          },
+        }
       );
+      // await users.updateOne(
+      //   { _id: userId },
+      //   {
+      //     $pull: { journals: { _id: { $in: journalIds } } },
+      //   }
+      // );
 
       // If no update occurred, because of no user found, or no journalId's found
       if (!updatedDoc) {
@@ -72,7 +88,7 @@ router.put(
       return res.json({
         success: true,
         message: "Successfull deleted the journals.",
-        data: updatedDoc,
+        data: undefined, // !!!! set this to updatedDoc
       });
     } catch (error) {
       return res.json({

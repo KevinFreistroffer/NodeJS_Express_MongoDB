@@ -1,4 +1,4 @@
-import { ObjectId } from "mongodb";
+import { Document, ObjectId } from "mongodb";
 
 export interface IResponse {
   success: boolean;
@@ -6,7 +6,7 @@ export interface IResponse {
   data: ISanitizedUser | undefined;
 }
 
-export interface IJournal {
+export interface IJournal extends Document {
   title: string;
   entry: string;
   category: string;
@@ -18,14 +18,14 @@ export interface IJournalDoc extends IJournal {
   _id: ObjectId;
 }
 
-export interface ICategory {
+export interface ICategory extends Document {
   category: string;
   selected: boolean;
 }
 
-export interface ICategoryDoc extends ICategory {
-  _id: ObjectId;
-}
+// export interface ICategoryDoc extends ICategory {
+//   _id: ObjectId;
+// }
 
 export interface IUser {
   username: string;
@@ -41,9 +41,9 @@ export interface IUser {
   journalCategories: ICategory[];
 }
 
-export interface IUserDoc extends IUser {
-  _id: ObjectId;
-}
+// export interface IUserDoc extends IUser {
+//   _id: ObjectId;
+// }
 
 export interface ISanitizedUser
   extends Omit<
@@ -60,13 +60,13 @@ export interface ISession {
   user_id: string;
 }
 
-export interface IUserDoc extends IUser, Document {
-  journals: IJournalDoc[];
-  journalCategories: ICategoryDoc[];
-}
+// export interface IUserDoc extends IUser, Document {
+//   journals: IJournalDoc[];
+//   journalCategories: ICategoryDoc[];
+// }
 
-export interface ISessionDoc {
-  _id: string;
-  expires_at: Date;
-  user_id: string;
-}
+// export interface ISessionDoc {
+//   _id: string;
+//   expires_at: Date;
+//   user_id: string;
+// }

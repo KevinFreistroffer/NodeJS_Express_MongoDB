@@ -1,13 +1,12 @@
-import { Document, Types } from "mongoose";
 import config from "../../../../src/config";
 import {
   ICategory,
   IJournalDoc,
   ISanitizedUser,
   IUser,
-  IUserDoc,
+  // IUserDoc,
 } from "../../../defs/interfaces";
-import { User } from "../../../defs/models/user.model";
+// import { User } from "../../../defs/models/user.model";
 import * as express from "express";
 import { body, validationResult } from "express-validator";
 import {
@@ -15,13 +14,15 @@ import {
   IResponseCode,
   responses,
 } from "../../../defs/responses";
+import { getConnectedClient, usersCollection } from "../../../db";
+import { ObjectId } from "mongodb";
 
 const router = express.Router();
 
 const validatedJournalIds = body("journalIds")
   .isArray({ min: 1 })
   .bail()
-  .custom((value) => value.every((id: string) => Types.ObjectId.isValid(id)))
+  .custom((value) => value.every((id: string) => ObjectId.isValid(id)))
   .bail()
   .escape();
 const validatedStrings = body(["userId", "category"])
@@ -56,9 +57,11 @@ router.post(
 
       if (config.online) {
         // [TODO] mongoose method to do this
-        const doc:
-          | (Document<unknown, any, IUserDoc> & IUser & { _id: Types.ObjectId })
-          | null = await User.findById(userId).exec();
+
+        const client = await getConnectedClient();
+        const users = usersCollection(client);
+
+        const doc = await users.findOne({ _id: new ObjectId(userId) });
 
         if (!doc) {
           return res.json(responses.user_not_found());
@@ -67,7 +70,7 @@ router.post(
         doc.journals.forEach((journal) => {
           if (
             journalIds.includes(
-              ((journal as IJournalDoc)._id as Types.ObjectId).toString()
+              ((journal as IJournalDoc)._id as ObjectId).toString()
             )
           ) {
             journal.category = category;

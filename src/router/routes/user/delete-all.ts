@@ -3,10 +3,7 @@
 import { users as mockUsers } from "../../../data/mock_users";
 import config from "../../../../src/config";
 import * as express from "express";
-
 import * as bcrypt from "bcryptjs";
-import { User } from "../../../defs/models/user.model";
-
 import { body, validationResult } from "express-validator";
 import { has } from "lodash";
 import { IUser } from "../../../defs/interfaces";

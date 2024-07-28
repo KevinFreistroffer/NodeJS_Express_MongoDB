@@ -6,7 +6,7 @@ import * as express from "express";
 import * as bcrypt from "bcryptjs";
 import moment from "moment";
 import { sign } from "jsonwebtoken";
-import { User, UserProjection } from "../../../defs/models/user.model";
+import { UserProjection } from "../../../defs/models/user.model";
 import { body, validationResult } from "express-validator";
 import { has } from "lodash";
 import {
@@ -15,7 +15,7 @@ import {
   responses,
 } from "../../../../src/defs/responses";
 import { EMessageType } from "../../../defs/enums";
-import { ISanitizedUser, IUser, IUserDoc } from "../../../defs/interfaces";
+import { ISanitizedUser, IUser } from "../../../defs/interfaces";
 import { getConnectedClient, usersCollection } from "../../../db";
 
 const router = express.Router();

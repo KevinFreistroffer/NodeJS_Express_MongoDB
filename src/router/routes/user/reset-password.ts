@@ -5,7 +5,6 @@ import * as nodemailer from "nodemailer";
 import config from "../../../../src/config";
 import { body, validationResult } from "express-validator";
 
-import { User } from "../../../defs/models/user.model";
 import { IResponseBody, responses } from "../../../defs/responses";
 import { getConnectedClient, usersCollection } from "../../../db";
 const router = express.Router();

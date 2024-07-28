@@ -2,8 +2,6 @@
 
 import config from "../../../../src/config";
 import * as express from "express";
-import * as moment from "moment";
-import { User } from "../../../defs/models/user.model";
 import {
   IJournal,
   IJournalDoc,
@@ -12,6 +10,8 @@ import {
 } from "../../../defs/interfaces";
 import { body, validationResult } from "express-validator";
 import { has } from "lodash";
+import { getConnectedClient, usersCollection } from "../../../db";
+import { ObjectId } from "mongodb";
 const router = express.Router();
 const validatedIds = body(["userId", "journalId"]) // TODO convert to zod?
   .notEmpty()
@@ -89,12 +89,17 @@ router.post(
         query["journals.$.category"] = category;
       }
       if (config.online) {
-        const doc = await User.findOneAndUpdate(
-          { _id: userId, "journals._id": journalId },
+        const client = await getConnectedClient();
+        const users = usersCollection(client);
+        const doc = await users.findOneAndUpdate(
+          {
+            _id: new ObjectId(userId),
+            "journals._id": new ObjectId(journalId),
+          },
           {
             $set: query,
-          },
-          { new: true }
+          }
+          //{ new: true } // What is this?????
         );
 
         if (!doc) {

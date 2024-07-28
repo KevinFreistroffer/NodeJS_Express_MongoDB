@@ -2,7 +2,7 @@
 
 import * as express from "express";
 import * as bcrypt from "bcryptjs";
-import { User, UserProjection } from "../../../defs/models/user.model";
+import { UserProjection } from "../../../defs/models/user.model";
 import { body, validationResult } from "express-validator";
 import { IResponseBody, responses } from "../../../defs/responses";
 import { getConnectedClient, usersCollection } from "../../../db";

@@ -1,6 +1,8 @@
 import * as express from "express";
-import { User } from "../../../defs/models/user.model";
+import { UserProjection } from "../../../defs/models/user.model";
 import { IJournal } from "../../../defs/interfaces";
+import { getConnectedClient, usersCollection } from "../../../db";
+import { ObjectId } from "mongodb";
 const router = express.Router();
 
 interface IResponseBody {
@@ -21,8 +23,12 @@ router.get(
           data: undefined,
         });
       }
-
-      const doc = await User.findById(req.params.userId).populate("journals");
+      const client = await getConnectedClient();
+      const users = usersCollection(client);
+      const doc = await users.findOne(
+        { _id: new ObjectId(req.params.userId) },
+        { projection: UserProjection }
+      );
       if (doc) {
         res.status(200).json({
           success: true,

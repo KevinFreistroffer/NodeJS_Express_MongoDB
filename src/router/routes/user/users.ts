@@ -5,10 +5,10 @@ import config from "../../../../src/config";
 import * as express from "express";
 
 import * as bcrypt from "bcryptjs";
-import { User, UserProjection } from "../../../defs/models/user.model";
+import { UserProjection } from "../../../defs/models/user.model";
 import { body, validationResult } from "express-validator";
 import { has } from "lodash";
-import { ISanitizedUser, IUser, IUserDoc } from "../../../defs/interfaces";
+import { ISanitizedUser, IUser } from "../../../defs/interfaces";
 import {
   IResponseBody,
   IResponseCode,

@@ -2,10 +2,12 @@
 
 import config from "../../../../src/config";
 import * as express from "express";
-import { User } from "../../../defs/models/user.model";
 
 import { body, validationResult } from "express-validator";
 import { IResponse } from "../../../defs/interfaces";
+import { Types } from "mongoose";
+import { getConnectedClient, usersCollection } from "../../../db";
+import { ObjectId } from "mongodb";
 
 const validatedUserId = body("userId") // TODO convert to zod?
   .notEmpty()
@@ -42,60 +44,52 @@ router.post(
 
         return res.status(422).json({
           success: false,
-          message: "Invalid request body.",
+          message:
+            "Invalid request body. Make sure the userId is a valid MongoDB ObjectId.",
           data: undefined,
         });
       }
 
       if (config.online) {
         const { userId, category } = req.body;
+        const client = await getConnectedClient();
+        const users = usersCollection(client);
+        const doc = await users.updateOne(
+          { _id: new ObjectId(userId) },
+          {
+            $addToSet: {
+              journalCategories: {
+                category,
+                selected: false,
+              },
+            },
+          },
+          { upsert: false }
+        );
 
-        const doc = await User.findById(userId).exec();
+        console.log("doc", doc);
 
-        if (!doc) {
+        if (!doc.acknowledged) {
           return res.json({
             success: false,
             message: "User not found.",
             data: undefined,
           });
-        } else {
-          //console.log( "foundUser", foundUser );
-          console.log(doc.journalCategories);
-          let categoryExists = doc.journalCategories.length
-            ? doc.journalCategories.some((categoryDoc) => {
-                console.log(categoryDoc.category, typeof categoryDoc.category);
-                return (
-                  category.toLowerCase() === categoryDoc.category.toLowerCase()
-                );
-              })
-              ? true
-              : false
-            : false;
-
-          if (categoryExists) {
-            res.status(409).json({
-              success: false,
-              message: "Category already exists.",
-              data: undefined,
-            });
-
-            return;
-          } else {
-            doc.journalCategories.push({ category, selected: false });
-            const savedDoc = await doc.save();
-            console.log("savedDoc", savedDoc);
-
-            if (!savedDoc) {
-              throw new Error("Could not save the new category.");
-            }
-
-            return res.send({
-              success: true,
-              message: "Saved the category.",
-              data: savedDoc,
-            });
-          }
         }
+
+        if (doc.modifiedCount === 0) {
+          return res.json({
+            success: true,
+            message: "Category already exists.",
+            data: undefined,
+          });
+        }
+
+        return res.json({
+          success: true,
+          message: "Category saved.", // Might need to get the user, and check if the category already exists
+          data: undefined,
+        });
       } else {
         res.send({
           success: false,

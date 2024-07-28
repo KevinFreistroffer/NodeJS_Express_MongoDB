@@ -1,7 +1,6 @@
 "use strict";
 
 import * as express from "express";
-import { User } from "../../../defs/models/user.model";
 
 import { has } from "lodash";
 import { body } from "express-validator";

@@ -3,7 +3,6 @@
 import * as express from "express";
 import * as nodemailer from "nodemailer";
 import config, { EStage } from "../../../../src/config";
-import { User } from "../../../defs/models/user.model";
 
 import { body, validationResult } from "express-validator";
 import { ISanitizedUser } from "../../../defs/interfaces";
