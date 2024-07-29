@@ -102,6 +102,7 @@ import { forbiddenResponseFields } from "./defs/constants";
 //   return arg && arg.data;
 // };
 
+// TODO: Is this a Document or WithId<IUser>?
 export const convertDocToSafeUser = (UNSAFE_DOC: any): ISanitizedUser => {
   console.log(UNSAFE_DOC, typeof UNSAFE_DOC);
   const SAFE_DOC: ISanitizedUser & { _id: ObjectId } = {

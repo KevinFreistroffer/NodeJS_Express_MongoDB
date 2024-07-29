@@ -16,6 +16,9 @@ import {
 } from "../../../defs/responses";
 import { getConnectedClient, usersCollection } from "../../../db";
 import { ObjectId } from "mongodb";
+import { verifyToken } from "../../../middleware";
+import { convertDocToSafeUser } from "../../../utils";
+import { UserProjection } from "../../../defs/models/user.model";
 
 const router = express.Router();
 
@@ -34,6 +37,7 @@ const validatedStrings = body(["userId", "category"])
 
 router.post(
   "/",
+  verifyToken,
   validatedStrings,
   validatedJournalIds,
   async (
@@ -47,43 +51,71 @@ router.post(
     console.log("[journal/bulk-set-category] req.body", req.body);
 
     try {
+      /*--------------------------------------------------
+       *  Validate the request body
+       *------------------------------------------------*/
       const validatedFields = validationResult(req);
       if (!validatedFields.isEmpty()) {
         console.log(validatedFields);
         return res.status(422).json(responses.missing_body_fields());
       }
+
       const { userId, journalIds, category } = req.body;
-      console.log(req.body);
+      const client = await getConnectedClient();
+      const users = usersCollection(client);
 
-      if (config.online) {
-        // [TODO] mongoose method to do this
+      const doc = await users.findOne({ _id: new ObjectId(userId) });
 
-        const client = await getConnectedClient();
-        const users = usersCollection(client);
-
-        const doc = await users.findOne({ _id: new ObjectId(userId) });
-
-        if (!doc) {
-          return res.json(responses.user_not_found());
-        }
-
-        doc.journals.forEach((journal) => {
-          if (
-            journalIds.includes(
-              ((journal as IJournalDoc)._id as ObjectId).toString()
-            )
-          ) {
-            journal.category = category;
-          }
-        });
-
-        const savedDoc = await doc.save();
-        console.log("savedDoc", savedDoc);
-
-        return res.json(responses.success(savedDoc));
-      } else {
-        res.send(responses.success());
+      /*--------------------------------------------------
+       *  User not found
+       *------------------------------------------------*/
+      if (!doc) {
+        return res.json(responses.user_not_found());
       }
+
+      /*--------------------------------------------------
+       *  Set the journal category on each journal
+       *------------------------------------------------*/
+      doc.journals.forEach((journal) => {
+        if (
+          journalIds.includes(
+            ((journal as IJournalDoc)._id as ObjectId).toString()
+          )
+        ) {
+          journal.category = category;
+        }
+      });
+
+      /*--------------------------------------------------
+       *  Save the updated user.journals
+       *------------------------------------------------*/
+      const updatedDoc = await users.updateOne(
+        { _id: new ObjectId(userId) },
+        {
+          $set: {
+            journals: doc.journals,
+          },
+        }
+      );
+
+      if (!updatedDoc.acknowledged) {
+        return res.json(responses.error_updating_user());
+      }
+
+      const savedDoc = await users.findOne<ISanitizedUser>(
+        { _id: new ObjectId(userId) },
+        { projection: UserProjection }
+      );
+
+      if (!savedDoc) {
+        return res.json(
+          responses.user_not_found(
+            "Categories successfully updated, however finding the updated user returned no doc. Try again."
+          )
+        );
+      }
+
+      return res.json(responses.success(savedDoc));
     } catch (error) {
       return res.status(500).json(responses.caught_error(error));
     }

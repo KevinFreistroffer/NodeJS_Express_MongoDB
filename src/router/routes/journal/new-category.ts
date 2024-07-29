@@ -8,6 +8,7 @@ import { IResponse } from "../../../defs/interfaces";
 import { Types } from "mongoose";
 import { getConnectedClient, usersCollection } from "../../../db";
 import { ObjectId } from "mongodb";
+import { verifyToken } from "../../../middleware";
 
 const validatedUserId = body("userId") // TODO convert to zod?
   .notEmpty()
@@ -26,6 +27,7 @@ const router = express.Router();
 
 router.post(
   "/",
+  verifyToken,
   validatedUserId,
   validatedJournal,
   async (

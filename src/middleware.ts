@@ -25,7 +25,7 @@ export const verifyToken = (
       return res.sendStatus(401);
     }
 
-    req.auth = authData; // Attach authData to request object
+    res.locals.auth = authData;
     next(); // Proceed to next middleware or route handler
   });
 };

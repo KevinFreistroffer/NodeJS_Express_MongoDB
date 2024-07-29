@@ -11,6 +11,7 @@ import { IResponseBody, responses } from "../../../defs/responses";
 import { Types } from "mongoose";
 import { getConnectedClient, usersCollection } from "../../../db";
 import { ObjectId } from "mongodb";
+import { verifyToken } from "../../../middleware";
 const days = ["Sun", "Mon", "Tue", "Wed", "Thur", "Fri", "Sat"];
 const validatedUserId = body("userId") // TODO convert to zod?
   .notEmpty()
@@ -27,6 +28,7 @@ const router = express.Router();
 
 router.post(
   "/",
+  verifyToken,
   validatedUserId,
   validatedJournal,
   async (

@@ -3,6 +3,7 @@ import { UserProjection } from "../../../defs/models/user.model";
 import { IJournal } from "../../../defs/interfaces";
 import { getConnectedClient, usersCollection } from "../../../db";
 import { ObjectId } from "mongodb";
+import { verifyToken } from "../../../middleware";
 const router = express.Router();
 
 interface IResponseBody {
@@ -13,6 +14,7 @@ interface IResponseBody {
 
 router.get(
   "/:userId",
+  verifyToken,
   async (req: express.Request, res: express.Response<IResponseBody>) => {
     console.log("[Journal/Journals] GET reached", req.params.userId);
     try {

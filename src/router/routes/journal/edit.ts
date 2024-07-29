@@ -12,6 +12,7 @@ import { body, validationResult } from "express-validator";
 import { has } from "lodash";
 import { getConnectedClient, usersCollection } from "../../../db";
 import { ObjectId } from "mongodb";
+import { verifyToken } from "../../../middleware";
 const router = express.Router();
 const validatedIds = body(["userId", "journalId"]) // TODO convert to zod?
   .notEmpty()
@@ -45,6 +46,7 @@ interface IResponseBody {
 }
 router.post(
   "/",
+  verifyToken,
   validatedIds,
   async (
     req: express.Request<never, never, IRequestBody>,
