@@ -10,6 +10,7 @@
 import { ObjectId } from "mongodb";
 import { ISanitizedUser } from "./defs/interfaces";
 import { forbiddenResponseFields } from "./defs/constants";
+import { Request } from "express";
 
 // export const verifyJWT = async (token: string) => {
 //   if (!isJwtPayload(token)) {

@@ -43,7 +43,6 @@ router.post(
        *  Validate request body.
        *------------------------------------------------*/
       const validatedFields = validationResult(req);
-
       if (!validatedFields.isEmpty()) {
         return res.status(422).json(responses.missing_body_fields());
       }
@@ -52,7 +51,6 @@ router.post(
        *  Valid request body.
        *------------------------------------------------*/
       const { username, userId, email, password } = req.body;
-      console.log("[SignUp] req.body", req.body);
 
       /*--------------------------------------------------
        *  MongoDB User collection
