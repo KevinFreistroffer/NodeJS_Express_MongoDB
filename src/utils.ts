@@ -113,7 +113,7 @@ export const convertDocToSafeUser = (UNSAFE_DOC: any): ISanitizedUser => {
     journals: UNSAFE_DOC.journals,
     journalCategories: UNSAFE_DOC.journalCategories,
     resetPasswordToken: UNSAFE_DOC.resetPasswordToken,
-    jwtToken: UNSAFE_DOC.jwtToken,
+    // jwtToken: UNSAFE_DOC.jwtToken,
   };
 
   for (let field in forbiddenResponseFields) {

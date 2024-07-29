@@ -16,6 +16,10 @@ export interface IDataWithUser extends IResponseCode {
   user: ISanitizedUser;
 }
 
+export interface IDataWithUsers extends IResponseCode {
+  users: ISanitizedUser[];
+}
+
 export interface IResponseBodies {
   user_not_found: () => IResponseBody;
   users_not_found: () => IResponseBody;

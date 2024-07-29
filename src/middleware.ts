@@ -11,11 +11,13 @@ export const verifyToken = (
   res: Response,
   next: NextFunction
 ) => {
+  console.log("verifyToken middleware reached...");
   const bearerHeader = req.headers["authorization"];
+  console.log("bearerHeader", bearerHeader);
   if (typeof bearerHeader !== "undefined") {
     const bearerToken = bearerHeader.split(" ")[1]; // Extract token from header
     jwt.verify(bearerToken, config.jwtSecret, (err, authData) => {
-      console.log(authData);
+      console.log("authData", authData);
       if (err) {
         res.sendStatus(403);
       } else {

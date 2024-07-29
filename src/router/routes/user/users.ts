@@ -10,7 +10,7 @@ import { body, validationResult } from "express-validator";
 import { has } from "lodash";
 import { ISanitizedUser, IUser } from "../../../defs/interfaces";
 import {
-  IResponseBody,
+  IResponseBody as _IResponseBody,
   IResponseCode,
   responses,
 } from "../../../defs/responses";
@@ -19,42 +19,27 @@ import { getConnectedClient, usersCollection } from "../../../db";
 import { verifyToken } from "../../../middleware";
 const router = express.Router();
 
+interface IData extends IResponseCode {
+  users?: ISanitizedUser[];
+}
+interface IResponseBody extends _IResponseBody {
+  data: IData;
+}
+
 router.get(
   "/",
   verifyToken,
-  async (req: express.Request, res: express.Response<any>) => {
+  async (req: express.Request, res: express.Response<IResponseBody>) => {
     try {
       console.log("[/users] reached...");
 
-      if (config.online) {
-        const client = await getConnectedClient();
-        const users = usersCollection(client);
-        // Find user by username or email
-        const doc = await users.find().project(UserProjection).toArray();
-        console.log(doc);
-
-        if (!doc) {
-          return res.json(responses.users_not_found());
-        }
-
-        return res.json({
-          ...responses.success(),
-          data: {
-            ...responses.success().data,
-            user: doc,
-          },
-        });
-      } else {
-        console.log("[/users] Offline handler.");
-
-        return res.json({
-          ...responses.success(),
-          data: {
-            ...responses.success().data,
-            user: mockUsers as any, // TODO fix
-          },
-        });
-      }
+      return res.json({
+        ...responses.success(),
+        data: {
+          ...responses.success().data,
+          users: mockUsers as any, // TODO fix
+        },
+      });
     } catch (error) {
       console.log("[/users] Caught error. Error: ", error);
 

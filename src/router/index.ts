@@ -22,6 +22,7 @@ module.exports = (app: express.Express) => {
   // app.use("/journal/journals", require("./routes/journal/journals"));
   // app.use("/journal/delete", require("./routes/journal/delete"));
   app.use("/journal/new-category", require("./routes/journal/new-category"));
+  app.use("/auth/bearer", require("./routes/auth/bearer"));
   // app.use(
   //   "/journal/bulk-set-category",
   //   require("./routes/journal/bulk-set-category")
