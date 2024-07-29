@@ -14,18 +14,18 @@ export const verifyToken = (
   console.log("verifyToken middleware reached...");
   const bearerHeader = req.headers["authorization"];
   console.log("bearerHeader", bearerHeader);
-  if (typeof bearerHeader !== "undefined") {
-    const bearerToken = bearerHeader.split(" ")[1]; // Extract token from header
-    jwt.verify(bearerToken, config.jwtSecret, (err, authData) => {
-      console.log("authData", authData);
-      if (err) {
-        res.sendStatus(403);
-      } else {
-        req.auth = authData; // Attach authData to request object
-        next(); // Proceed to next middleware or route handler
-      }
-    });
-  } else {
-    res.sendStatus(401); // Unauthorized
+  if (typeof bearerHeader === "undefined") {
+    return res.sendStatus(401); // Unauthorized
   }
+
+  const bearerToken = bearerHeader.split(" ")[1]; // Extract token from header
+  jwt.verify(bearerToken, config.jwtSecret, (err, authData) => {
+    console.log("authData", authData);
+    if (err) {
+      return res.sendStatus(401);
+    }
+
+    req.auth = authData; // Attach authData to request object
+    next(); // Proceed to next middleware or route handler
+  });
 };

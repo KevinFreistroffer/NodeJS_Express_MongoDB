@@ -15,11 +15,7 @@ router.get(
     console.log("accessKey", accessKey);
 
     if (typeof accessKey === "undefined" || accessKey !== config.apiAccessKey) {
-      return res.status(401).json({
-        success: false,
-        message: "Forbidden.",
-        data: undefined,
-      });
+      return res.sendStatus(401);
     }
 
     const jwtToken = sign({ data: "123" }, config.jwtSecret, {

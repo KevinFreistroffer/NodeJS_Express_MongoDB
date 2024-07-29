@@ -5,10 +5,12 @@ import { UserProjection } from "../../../defs/models/user.model";
 import { body, validationResult } from "express-validator";
 import { IResponseBody, responses } from "../../../defs/responses";
 import { getConnectedClient, usersCollection } from "../../../db";
+import { verifyToken } from "../../../middleware";
 const router = express.Router();
 
 router.post(
   "/",
+  verifyToken,
   body("username").notEmpty().bail().isString().bail().escape(),
   async (
     req: express.Request<never, never, { username: string }>,

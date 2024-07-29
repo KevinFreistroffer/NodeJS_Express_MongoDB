@@ -9,10 +9,12 @@ import { has } from "lodash";
 import { IUser } from "../../../defs/interfaces";
 import { IResponseBody, responses } from "../../../defs/responses";
 import { getConnectedClient, usersCollection } from "../../../db";
+import { verifyToken } from "../../../middleware";
 const router = express.Router();
 
 router.delete(
   "/",
+  verifyToken,
   async (req: express.Request, res: express.Response<IResponseBody>) => {
     try {
       console.log("[/delete-all] reached...");

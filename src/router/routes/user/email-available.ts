@@ -6,11 +6,13 @@ import { has } from "lodash";
 import { body } from "express-validator";
 import { IResponseBody, responses } from "../../../defs/responses";
 import { getConnectedClient, usersCollection } from "../../../db";
+import { verifyToken } from "../../../middleware";
 const { query, validationResult } = require("express-validator");
 const router = express.Router();
 
 router.post(
   "/",
+  verifyToken,
   body("email").isEmail().bail().escape(),
   async (
     req: express.Request<never, never, { email: string }>,
