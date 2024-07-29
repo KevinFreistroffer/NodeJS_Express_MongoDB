@@ -15,6 +15,7 @@ export const verifyToken = (
   if (typeof bearerHeader !== "undefined") {
     const bearerToken = bearerHeader.split(" ")[1]; // Extract token from header
     jwt.verify(bearerToken, config.jwtSecret, (err, authData) => {
+      console.log(authData);
       if (err) {
         res.sendStatus(403);
       } else {

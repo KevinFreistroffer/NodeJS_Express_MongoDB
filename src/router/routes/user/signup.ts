@@ -2,11 +2,12 @@
 
 import * as express from "express";
 import * as bcrypt from "bcryptjs";
+import { InsertOneResult } from "mongodb";
 import { UserProjection } from "../../../defs/models/user.model";
 import { body, validationResult } from "express-validator";
 import { IResponseBody, responses } from "../../../defs/responses";
 import { getConnectedClient, usersCollection } from "../../../db";
-import { IUser } from "../../../defs/interfaces";
+import { ISanitizedUser, IUser } from "../../../defs/interfaces";
 
 const router = express.Router();
 
@@ -70,69 +71,53 @@ router.post(
         return res.json(responses.username_or_email_already_registered());
       }
 
-      const insertDoc = await users.insertOne({
-        username,
-        usernameNormalized: username.toLowerCase(),
-        email,
-        emailNormalized: email.toLowerCase(),
-        password,
-        resetPasswordToken: "",
-        // resetPasswordExpires: new Date(),
-        jwtToken: "",
-        journals: [],
-        journalCategories: [],
-      });
-
-      if (!insertDoc.acknowledged) {
-        console.log("Could not insert document.", doc);
-        throw new Error(
-          "Could not insert document. Username and email do NOT exist already."
-        );
-      }
-
-      // TODO: convert this to a reusable function, so the projection is not forgotten
-      const newUserDoc = await users.findOne(
-        { _id: insertDoc.insertedId },
-        { projection: UserProjection }
-      );
-
-      if (!newUserDoc) {
-        throw new Error("Error finding the newly created user's ObjectId.");
-      }
-
       const saltRounds = 10;
 
-      bcrypt.genSalt(saltRounds, (saltError, salt) => {
-        if (saltError) {
-          throw new Error("Error generating salt. Error: " + saltError);
-        }
-        bcrypt.hash(password, salt, async (hashError, hash) => {
-          if (hashError) {
-            throw new Error("Error hashing the password. Error: " + hashError);
-          }
+      // const salt = (saltError: Error | null, salt: string) => {};
 
-          /* ----------------------------------
-           *  SUCCESS
-           *  Successfully saved this new user.
-           * --------------------------------*/
-          console.log("[SignUp] Success creating a new user.");
-          console.log("Creating the lucias session.");
-          // const session = await lucia.createSession(
-          //   newUserDoc._id.toString(),
-          //   {}
-          // );
+      const salt = await bcrypt.genSalt(saltRounds);
 
-          // const sessionCookie = lucia
-          //   .createSessionCookie(session.id)
-          //   .serialize();
+      if (!salt) {
+        throw new Error("Error generating salt.");
+      }
 
-          // console.log(sessionCookie);
+      if (salt) {
+        console.log("SALT", salt);
 
-          return res
-            .appendHeader("Set-Cookie", "sessionCookie")
-            .json(responses.success(newUserDoc));
+        const hashedPassword = await bcrypt.hash(password, salt);
+
+        const insertDoc = await users.insertOne({
+          username,
+          usernameNormalized: username.toLowerCase(),
+          email,
+          emailNormalized: email.toLowerCase(),
+          password: hashedPassword,
+          resetPasswordToken: "",
+          // jwtToken: "",
+          journals: [],
+          journalCategories: [],
         });
-      });
+
+        console.log("insertDoc", insertDoc, Object.keys(insertDoc));
+
+        if (!insertDoc.acknowledged) {
+          console.log("Could not insert document.", insertDoc);
+          throw new Error("Could not insert document. Try again.");
+        }
+
+        const newUserDoc = (await users.findOne(
+          { _id: insertDoc.insertedId },
+          { projection: UserProjection }
+        )) as ISanitizedUser;
+
+        if (!newUserDoc) {
+          throw new Error("Error finding the newly created user's ObjectId.");
+        }
+
+        console.log("[SignUp] Success creating a new user.", newUserDoc);
+
+        return res.json(responses.success(newUserDoc));
+      }
     } catch (error) {
       console.log("[SignUp] err.", error);
 

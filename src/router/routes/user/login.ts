@@ -17,6 +17,7 @@ import {
 import { EMessageType } from "../../../defs/enums";
 import { ISanitizedUser, IUser } from "../../../defs/interfaces";
 import { getConnectedClient, usersCollection } from "../../../db";
+import { convertDocToSafeUser } from "../../../utils";
 
 const router = express.Router();
 
@@ -48,107 +49,101 @@ router.post(
     res: express.Response<IResponseBody>
   ) => {
     try {
+      /*--------------------------------------------------
+       * Validates request body
+       *------------------------------------------------*/
       const validStaySignedIn = has(req.body, "staySignedIn")
         ? typeof req.body.staySignedIn === "boolean"
           ? true
           : false
         : true;
 
-      if (validationResult(req).array().length || !validStaySignedIn) {
+      const validatedResults = validationResult(req);
+      console.log("validatedResults", validatedResults);
+      if (validatedResults.array().length || !validStaySignedIn) {
         return res.status(422).json(responses.missing_body_fields());
       }
 
+      /*--------------------------------------------------
+       * Valid request body
+       *------------------------------------------------*/
       const { usernameOrEmail, password, staySignedIn } = req.body;
+      console.log("/login reached");
+      console.log("request body: ", req.body, staySignedIn);
 
-      console.log("/login reached...");
-      console.log("request body data: ", req.body, staySignedIn);
+      /*--------------------------------------------------
+       * MongoDB connection and collection
+       *------------------------------------------------*/
+      const client = await getConnectedClient();
+      const users = await usersCollection(client);
 
-      if (config.online) {
-        const client = await getConnectedClient();
-        const users = await usersCollection(client);
-        const doc = await users.findOne(
-          {
-            $or: [{ username: usernameOrEmail }, { email: usernameOrEmail }],
-          },
-          { projection: UserProjection }
-        );
+      /*--------------------------------------------------
+       * Does the user exist?
+       *------------------------------------------------*/
+      const UNSAFE_FOUND_USER = await users.findOne({
+        $or: [{ username: usernameOrEmail }, { email: usernameOrEmail }],
+      });
 
-        console.log("[Login] found user by username or email: ", doc);
+      /*--------------------------------------------------
+       * User NOT found
+       *------------------------------------------------*/
+      if (!UNSAFE_FOUND_USER) {
+        console.log("User doesn't exist.");
 
-        /*--------------------------------------------------
-         * User NOT found
-         *------------------------------------------------*/
-        if (!doc) {
-          console.log("User doesn't exist.");
-
-          return res.status(200).json(responses.user_not_found());
-        }
-
-        /*--------------------------------------------------
-         * User NOT found
-         * Compare the passwords
-         *------------------------------------------------*/
-        bcrypt.compare(
-          password,
-          doc.password,
-          (compareError, validPassword) => {
-            if (compareError) {
-              throw new Error(compareError.message);
-            }
-
-            /*--------------------------------------------------
-             *  Invalid password
-             *------------------------------------------------*/
-            if (!validPassword) {
-              return res.status(200).json(responses.user_not_found());
-            }
-
-            /*--------------------------------------------------
-             *  Valid password
-             *------------------------------------------------*/
-            let jwtToken;
-            if (staySignedIn) {
-              console.log("User chose to stay logged in. Generating hash ...");
-
-              // const timeStamp = moment().add(14, "days");
-              jwtToken = sign({ data: doc._id.toString() }, config.jwtSecret, {
-                expiresIn: config.jwtTokenExpiresIn,
-              });
-            }
-
-            return res.json({
-              ...responses.success(),
-              data: {
-                ...responses.success().data,
-                user: doc,
-                jwtToken,
-              },
-            });
-          }
-        );
-      } else {
-        // Offline login handler
-        console.log("Offline login handler.");
-
-        for (let i = 0; i < mockUsers.length; i++) {
-          const user = mockUsers[i];
-          console.log(mockUsers[i]);
-
-          if (
-            usernameOrEmail !== mockUsers[i].username ||
-            password !== mockUsers[i].password
-          ) {
-            return res
-              .status(200)
-              .json(responses.invalid_usernameOrEmail_and_password());
-          }
-
-          console.log("[Offline] Successful login");
-          return res.json(responses.success());
-        }
-
-        return res.json(responses.user_not_found());
+        return res.status(200).json(responses.user_not_found());
       }
+
+      /*--------------------------------------------------
+       * User DOES exist.
+       * Compare passwords.
+       *------------------------------------------------*/
+      const passwordsMatch = await bcrypt.compare(
+        password,
+        UNSAFE_FOUND_USER.password
+      );
+      console.log(passwordsMatch);
+
+      /*--------------------------------------------------
+       *  Invalid password
+       *------------------------------------------------*/
+      if (!passwordsMatch) {
+        return res.status(401).json(responses.invalid_password());
+      }
+
+      /*--------------------------------------------------
+       *  Valid password
+       *------------------------------------------------*/
+      let jwtToken;
+
+      /*-----------------------------------------------------
+       * Generate a JWT if the users chose to stay signed in.
+       *---------------------------------------------------*/
+      if (staySignedIn) {
+        console.log("User chose to stay logged in. Generating a JWT");
+
+        // const timeStamp = moment().add(14, "days");
+        jwtToken = sign(
+          { data: UNSAFE_FOUND_USER._id.toString() },
+          config.jwtSecret,
+          {
+            expiresIn: config.jwtTokenExpiresIn,
+          }
+        );
+
+        if (!jwtToken) {
+          throw new Error("Error generating JWT token.");
+        }
+      }
+
+      // TODO: make a single function that handles returning responses, and uses the convertDocToSafeUser
+      return res.json({
+        ...responses.success(),
+        data: {
+          ...responses.success().data,
+          user: undefined,
+          jwtToken,
+        },
+      });
     } catch (error) {
       return res.status(500).json(responses.caught_error(error));
     }

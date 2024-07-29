@@ -15,7 +15,7 @@ module.exports = (app: express.Express) => {
   //   "/user/username-available",
   //   require("./routes/user/username-available")
   // );
-  // app.use("/user/users", require("./routes/user/users"));
+  app.use("/user/users", require("./routes/user/users"));
   // app.use("/user/delete-all", require("./routes/user/delete-all"));
   app.use("/journal/create", require("./routes/journal/create"));
   // app.use("/journal/edit", require("./routes/journal/edit"));

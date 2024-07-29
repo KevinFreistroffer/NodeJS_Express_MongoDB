@@ -68,6 +68,7 @@ router.post(
         };
         const client = await getConnectedClient();
         const users = usersCollection(client);
+
         // const doc = await users.findOneAndUpdate({ _id: new ObjectId(userId) });
         const doc = await users.updateOne(
           { _id: new ObjectId(userId) },
