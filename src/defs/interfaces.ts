@@ -49,7 +49,8 @@ export interface IUser {
 export interface ISanitizedUser
   extends Omit<
     IUser,
-    "password"
+    "password" | "usernameNormalized" | "emailNormalized"
+
     // | "resetPasswordToken"
     // | "resetPasswordExpires"
     // | "jwtToken"

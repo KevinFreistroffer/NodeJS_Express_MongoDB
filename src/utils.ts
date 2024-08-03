@@ -11,6 +11,47 @@ import { ObjectId } from "mongodb";
 import { ISanitizedUser } from "./defs/interfaces";
 import { forbiddenResponseFields } from "./defs/constants";
 import { Request } from "express";
+import * as bcrypt from "bcryptjs";
+
+export const convertDocToSafeUser = (UNSAFE_DOC: any): ISanitizedUser => {
+  console.log(UNSAFE_DOC, typeof UNSAFE_DOC);
+  const SAFE_DOC: ISanitizedUser & { _id: ObjectId } = {
+    _id: UNSAFE_DOC._id,
+    username: UNSAFE_DOC.username,
+    // usernameNormalized: UNSAFE_DOC.usernameNormalized,
+    email: UNSAFE_DOC.email,
+    // emailNormalized: UNSAFE_DOC.emailNormalized,
+    journals: UNSAFE_DOC.journals,
+    journalCategories: UNSAFE_DOC.journalCategories,
+    resetPasswordToken: UNSAFE_DOC.resetPasswordToken,
+    // jwtToken: UNSAFE_DOC.jwtToken,
+  };
+
+  for (let field in forbiddenResponseFields) {
+    if (field in SAFE_DOC) {
+      throw new Error(`${field} field is not allowed in the SAFE_DOC object.`);
+    }
+  }
+
+  return SAFE_DOC;
+};
+
+export const hashPassword = async (password: string) => {
+  const saltRounds = 10;
+  const salt = await bcrypt.genSalt(saltRounds);
+
+  if (!salt) {
+    throw new Error("Error generating salt.");
+  }
+
+  const hash = await bcrypt.hash(password, salt);
+
+  if (!hash) {
+    throw new Error("Error hashing password.");
+  }
+
+  return hash;
+};
 
 // export const verifyJWT = async (token: string) => {
 //   if (!isJwtPayload(token)) {
@@ -104,25 +145,3 @@ import { Request } from "express";
 // };
 
 // TODO: Is this a Document or WithId<IUser>?
-export const convertDocToSafeUser = (UNSAFE_DOC: any): ISanitizedUser => {
-  console.log(UNSAFE_DOC, typeof UNSAFE_DOC);
-  const SAFE_DOC: ISanitizedUser & { _id: ObjectId } = {
-    _id: UNSAFE_DOC._id,
-    username: UNSAFE_DOC.username,
-    usernameNormalized: UNSAFE_DOC.usernameNormalized,
-    email: UNSAFE_DOC.email,
-    emailNormalized: UNSAFE_DOC.emailNormalized,
-    journals: UNSAFE_DOC.journals,
-    journalCategories: UNSAFE_DOC.journalCategories,
-    resetPasswordToken: UNSAFE_DOC.resetPasswordToken,
-    // jwtToken: UNSAFE_DOC.jwtToken,
-  };
-
-  for (let field in forbiddenResponseFields) {
-    if (field in SAFE_DOC) {
-      throw new Error(`${field} field is not allowed in the SAFE_DOC object.`);
-    }
-  }
-
-  return SAFE_DOC;
-};

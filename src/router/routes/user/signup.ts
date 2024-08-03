@@ -2,13 +2,14 @@
 
 import * as express from "express";
 import * as bcrypt from "bcryptjs";
-import { InsertOneResult } from "mongodb";
+import { InsertOneResult, WriteError } from "mongodb";
 import { UserProjection } from "../../../defs/models/user.model";
 import { body, validationResult } from "express-validator";
 import { IResponseBody, responses } from "../../../defs/responses";
 import { getConnectedClient, usersCollection } from "../../../db";
 import { ISanitizedUser, IUser } from "../../../defs/interfaces";
-import { convertDocToSafeUser } from "../../../utils";
+import { convertDocToSafeUser, hashPassword } from "../../../utils";
+import { findByUsernameOrEmail } from "../../../operations/user";
 
 const router = express.Router();
 
@@ -61,12 +62,7 @@ router.post(
       /*--------------------------------------------------
        *  Find user by username or email.
        *------------------------------------------------*/
-      const doc = await users.findOne<ISanitizedUser>(
-        {
-          $or: [{ username }, { email }],
-        },
-        { projection: UserProjection }
-      );
+      const doc = await findByUsernameOrEmail(username, email);
 
       /*--------------------------------------------------
        *  Username and/or Email are already registered.
@@ -76,17 +72,6 @@ router.post(
       }
 
       /*--------------------------------------------------
-       *  Hash the password
-       *------------------------------------------------*/
-      const saltRounds = 10;
-      const salt = await bcrypt.genSalt(saltRounds);
-
-      if (!salt) {
-        throw new Error("Error generating salt.");
-      }
-
-      const hashedPassword = await bcrypt.hash(password, salt);
-      /*--------------------------------------------------
        *  Save the user
        *------------------------------------------------*/
       const insertDoc = await users.insertOne({
@@ -94,7 +79,7 @@ router.post(
         usernameNormalized: username.toLowerCase(),
         email,
         emailNormalized: email.toLowerCase(),
-        password: hashedPassword,
+        password: await hashPassword(password),
         resetPasswordToken: "",
         // jwtToken: "",
         journals: [],
@@ -108,10 +93,10 @@ router.post(
       /*--------------------------------------------------
        *  Find the newly created user doc
        *------------------------------------------------*/
-      const newUserDoc = (await users.findOne(
+      const newUserDoc = await users.findOne(
         { _id: insertDoc.insertedId },
         { projection: UserProjection }
-      )) as ISanitizedUser;
+      );
 
       if (!newUserDoc) {
         throw new Error("Error finding the newly created user's ObjectId.");
@@ -119,7 +104,14 @@ router.post(
 
       return res.json(responses.success(convertDocToSafeUser(newUserDoc)));
     } catch (error) {
-      console.log("[SignUp] err.", error);
+      console.log("[/user/signup] caught error.", error);
+
+      // MongoDB error types
+      // WriteError = DuplicateKey
+      // WriteConcernError = 
+      if (error instanceof WriteError) {
+        return res.json(responses.username_or_email_already_registered());
+      }
 
       return res.status(500).json(responses.caught_error(error));
     }
