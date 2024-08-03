@@ -89,61 +89,53 @@ router.post(
       if (category) {
         query["journals.$.category"] = category;
       }
-      if (config.online) {
-        const client = await getConnectedClient();
-        const users = usersCollection(client);
-        const doc = await users.findOneAndUpdate(
-          {
-            _id: new ObjectId(userId),
-            "journals._id": new ObjectId(journalId),
-          },
-          {
-            $set: query,
-          }
-          //{ new: true } // What is this?????
-        );
-
-        if (!doc) {
-          return res.status(404).json({
-            success: false,
-            message: "User not found.",
-            data: undefined,
-          });
+      const client = await getConnectedClient();
+      const users = usersCollection(client);
+      const doc = await users.findOneAndUpdate(
+        {
+          _id: new ObjectId(userId),
+          "journals._id": new ObjectId(journalId),
+        },
+        {
+          $set: query,
         }
+        //{ new: true } // What is this?????
+      );
 
-        console.log(doc);
-
-        return res.send({
-          success: true,
-          message: "Journal updated.",
-          data: doc,
-        });
-
-        // doc.journals.forEach((journal) => {
-        //   if ((journal as IJournalDoc)._id?.toString() === journalId) {
-        //     if (title) {
-        //       query["journals.$.title"] = title;
-        //       journal.title = title;
-        //     }
-
-        //     if (entry) {
-        //       query["journals.$.entry"] = entry;
-        //       journal.entry = entry;
-        //     }
-
-        //     if (category) {
-        //       query["journals.$.category"] = category;
-        //       journal.category = category;
-        //     }
-        //   }
-        // });
-      } else {
-        return res.send({
-          success: true,
-          message: "Offline, not able to edit.",
+      if (!doc) {
+        return res.status(404).json({
+          success: false,
+          message: "User not found.",
           data: undefined,
         });
       }
+
+      console.log(doc);
+
+      return res.send({
+        success: true,
+        message: "Journal updated.",
+        data: doc,
+      });
+
+      // doc.journals.forEach((journal) => {
+      //   if ((journal as IJournalDoc)._id?.toString() === journalId) {
+      //     if (title) {
+      //       query["journals.$.title"] = title;
+      //       journal.title = title;
+      //     }
+
+      //     if (entry) {
+      //       query["journals.$.entry"] = entry;
+      //       journal.entry = entry;
+      //     }
+
+      //     if (category) {
+      //       query["journals.$.category"] = category;
+      //       journal.category = category;
+      //     }
+      //   }
+      // });
     } catch (error) {
       console.log("Error updated users journal: ", error);
 

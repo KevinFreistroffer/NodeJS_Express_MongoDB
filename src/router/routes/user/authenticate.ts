@@ -33,8 +33,7 @@
 //       console.log("/authenticate reached...");
 //       console.log("request body data: ", req.body);
 
-//       if (config.online) {
-//         const resp = await verifyJWT(token);
+//      const resp = await verifyJWT(token);
 //         console.log(resp);
 //         verify(token, config.jwtSecret, async (decodeError, decoded) => {
 //           // Error decoding the JWT token
@@ -102,12 +101,6 @@
 //             );
 //           }
 //         });
-//       } else {
-//         console.log("Offline login handler.");
-//         res.json(responses.success());
-
-//         return;
-//       }
 //     } catch (error) {
 //       console.log("[/authenticate] Caught error. Error: ", error);
 //       return res.status(500).json(responses.caught_error(error));

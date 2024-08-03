@@ -16,6 +16,24 @@ const { MongoClient, ServerApiVersion } = require("mongodb");
 // const GoogleStrategy = passportGoogleOAuth20.Strategy;
 const swaggerUi = require("swagger-ui-express");
 const swaggerSpec = require("../swagger-spec.json");
+const protectedRoutes = [
+  "/user/username-available",
+  "/user/email-available",
+  "/user/users",
+  "/user/delete-all",
+  "/journal/create",
+  "/journal/new-category",
+  "/journal/edit",
+  "/journal/journals",
+  "/journal/delete",
+  "/journal/bulk-set-category",
+  "/journal/deleteSelectedJournals",
+  "/journal/deleteSelectedCategories",
+  "/journal/updateJournalCategories",
+  "/journal/addCategory",
+  "/journal/delete-all",
+  "/auth/bearer",
+];
 
 // export default app;
 
@@ -46,27 +64,6 @@ export async function server() {
     // Database
     // ------------------------------------------------
 
-    if (config.online) {
-      // await client.connect();
-      // mongooseConnection = mongoose.connect(dbURI);
-      // mongoose.connection.on("connected", () => {
-      //   console.log("Mongoose connection CONNECTED");
-      // });
-      // mongoose.connection.on("error", (err) => {
-      //   console.log("Mongoose connection ERROR. Error: " + err);
-      //   mongoose.disconnect();
-      //   // Reconnect?
-      // });
-      // mongoose.connection.on("disconnected", () => {
-      //   console.log("Mongoose connection DISCONNECTED");
-      //   mongoose.connect(dbURI);
-      // });
-      // const adapter = new MongodbAdapter(
-      //   mongoose.connection.collection("sessions"),
-      //   mongoose.connection.collection("users")
-      // );
-    }
-
     // Express Variables
     // ----------------------------------------------------
     app.set("port", config.port);
@@ -86,24 +83,7 @@ export async function server() {
 
     // Router
     // ----------------------------------------------------
-    const protectedRoutes = [
-      "/user/username-available",
-      "/user/email-available",
-      "/user/users",
-      "/user/delete-all",
-      "/journal/create",
-      "/journal/new-category",
-      "/journal/edit",
-      "/journal/journals",
-      "/journal/delete",
-      "/journal/bulk-set-category",
-      "/journal/deleteSelectedJournals",
-      "/journal/deleteSelectedCategories",
-      "/journal/updateJournalCategories",
-      "/journal/addCategory",
-      "/journal/delete-all",
-      "/auth/bearer",
-    ];
+
     app.use("*", (req: Request, res: Response, next: NextFunction) => {
       console.log("req.url", req.baseUrl);
 

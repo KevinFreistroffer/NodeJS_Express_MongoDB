@@ -51,53 +51,45 @@ router.post(
         });
       }
 
-      if (config.online) {
-        const { userId, category } = req.body;
-        const client = await getConnectedClient();
-        const users = usersCollection(client);
-        const doc = await users.updateOne(
-          { _id: new ObjectId(userId) },
-          {
-            $addToSet: {
-              journalCategories: {
-                category,
-                selected: false,
-              },
+      const { userId, category } = req.body;
+      const client = await getConnectedClient();
+      const users = usersCollection(client);
+      const doc = await users.updateOne(
+        { _id: new ObjectId(userId) },
+        {
+          $addToSet: {
+            journalCategories: {
+              category,
+              selected: false,
             },
           },
-          { upsert: false }
-        );
+        },
+        { upsert: false }
+      );
 
-        console.log("doc", doc);
+      console.log("doc", doc);
 
-        if (!doc.acknowledged) {
-          return res.json({
-            success: false,
-            message: "User not found.",
-            data: undefined,
-          });
-        }
-
-        if (doc.modifiedCount === 0) {
-          return res.json({
-            success: true,
-            message: "Category already exists.",
-            data: undefined,
-          });
-        }
-
+      if (!doc.acknowledged) {
         return res.json({
-          success: true,
-          message: "Category saved.", // Might need to get the user, and check if the category already exists
-          data: undefined,
-        });
-      } else {
-        res.send({
           success: false,
-          message: "Offline, unable to save a new category. Try again later.",
+          message: "User not found.",
           data: undefined,
         });
       }
+
+      if (doc.modifiedCount === 0) {
+        return res.json({
+          success: true,
+          message: "Category already exists.",
+          data: undefined,
+        });
+      }
+
+      return res.json({
+        success: true,
+        message: "Category saved.", // Might need to get the user, and check if the category already exists
+        data: undefined,
+      });
     } catch (error) {
       console.log("Error while adding a category", error);
       res.status(500).json({

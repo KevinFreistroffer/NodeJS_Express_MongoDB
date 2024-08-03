@@ -19,22 +19,16 @@ router.delete(
     try {
       console.log("[/delete-all] reached...");
 
-      if (config.online) {
-        // Find user by username or email
-        // TODO: how to get the updated doc?
-        const doc = await deleteMany();
+      // Find user by username or email
+      // TODO: how to get the updated doc?
+      const doc = await deleteMany();
 
-        if (!doc) {
-          throw new Error("Users not deleted. No error. Not sure why.");
-        }
-
-        // TODO: return []? Or fetch the db again, which is obviously the better idea.
-        return res.json(responses.success());
-      } else {
-        console.log("[/delete-manhy] Offline handler.");
-
-        return res.json(responses.success());
+      if (!doc) {
+        throw new Error("Users not deleted. No error. Not sure why.");
       }
+
+      // TODO: return []? Or fetch the db again, which is obviously the better idea.
+      return res.json(responses.success());
     } catch (error) {
       console.log("[/delete-many] Caught error. Error: ", error);
 

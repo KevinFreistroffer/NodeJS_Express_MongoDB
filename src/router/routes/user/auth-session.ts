@@ -16,22 +16,11 @@ router.get(
       console.log("[/auth-session] reached...");
       console.log(req.headers);
 
-      if (config.online) {
-        return res.status(404).json({
-          success: false,
-          message: "User doesn't exist. Cannot to log in.",
-          data: undefined,
-        });
-      } else {
-        console.log("Offline auth-session handler.");
-        res.json({
-          success: true,
-          message: "Offline.",
-          data: undefined,
-        });
-
-        return;
-      }
+      return res.status(404).json({
+        success: false,
+        message: "User doesn't exist. Cannot to log in.",
+        data: undefined,
+      });
     } catch (error) {
       console.log("[/auth-session] Caught error. Error: ", error);
       return res.status(500).json({
