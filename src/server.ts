@@ -10,34 +10,11 @@ import passport from "passport";
 import cors from "cors";
 import debug from "debug";
 import { verifyAccessKey, verifyToken } from "./middleware";
-const { MongoClient, ServerApiVersion } = require("mongodb");
 // const cluster = require("cluster");
 // const path = require("path");
 // const GoogleStrategy = passportGoogleOAuth20.Strategy;
 const swaggerUi = require("swagger-ui-express");
 const swaggerSpec = require("../swagger-spec.json");
-const protectedRoutes = [
-  "/user/username-available",
-  "/user/email-available",
-  "/journal/create",
-  "/journal/new-category",
-  "/journal/edit",
-  "/journal/journals",
-  "/journal/delete",
-  "/journal/bulk-set-category",
-  "/journal/deleteSelectedJournals",
-  "/journal/deleteSelectedCategories",
-  "/journal/updateJournalCategories",
-  "/journal/addCategory",
-];
-
-const privateRoutes = [
-  "/user/users",
-  "/user/delete-all",
-  "/journal/delete-all",
-];
-
-// export default app;
 
 export async function server() {
   try {
@@ -82,15 +59,22 @@ export async function server() {
     app.use(passport.initialize());
     app.use(express.json());
     app.use("*", (req: Request, res: Response, next: NextFunction) => {
-      if (privateRoutes.find((route) => route === req.baseUrl.toLowerCase())) {
+      if (
+        config.privateRoutes.find(
+          (route) => route === req.baseUrl.toLowerCase()
+        )
+      ) {
         return verifyAccessKey(req, res, next);
       }
 
       if (
-        protectedRoutes.find((route) => route === req.baseUrl.toLowerCase())
+        config.protectedRoutes.find(
+          (route) => route === req.baseUrl.toLowerCase()
+        )
       ) {
         return verifyToken(req, res, next);
       }
+
       next();
     });
 
