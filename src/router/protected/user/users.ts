@@ -28,6 +28,7 @@ interface IResponseBody extends _IResponseBody {
 
 router.get(
   "/",
+  verifyToken,
   async (req: express.Request, res: express.Response<IResponseBody>) => {
     try {
       console.log("[/users] reached...");

@@ -46,7 +46,6 @@ interface IResponseBody {
 }
 router.post(
   "/",
-  verifyToken,
   validatedIds,
   async (
     req: express.Request<never, never, IRequestBody>,

@@ -9,6 +9,7 @@ import helmet from "helmet";
 import passport from "passport";
 import cors from "cors";
 import debug from "debug";
+import { verifyToken } from "./middleware";
 const { MongoClient, ServerApiVersion } = require("mongodb");
 // const cluster = require("cluster");
 // const path = require("path");
@@ -85,8 +86,32 @@ export async function server() {
 
     // Router
     // ----------------------------------------------------
+    const protectedRoutes = [
+      "/user/username-available",
+      "/user/email-available",
+      "/user/users",
+      "/user/delete-all",
+      "/journal/create",
+      "/journal/new-category",
+      "/journal/edit",
+      "/journal/journals",
+      "/journal/delete",
+      "/journal/bulk-set-category",
+      "/journal/deleteSelectedJournals",
+      "/journal/deleteSelectedCategories",
+      "/journal/updateJournalCategories",
+      "/journal/addCategory",
+      "/journal/delete-all",
+      "/auth/bearer",
+    ];
     app.use("*", (req: Request, res: Response, next: NextFunction) => {
-      console.log(req.cookies);
+      console.log("req.url", req.baseUrl);
+
+      if (
+        protectedRoutes.find((route) => route === req.baseUrl.toLowerCase())
+      ) {
+        return verifyToken(req, res, next);
+      }
       next();
     });
     require("./router")(app);

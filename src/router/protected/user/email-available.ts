@@ -12,6 +12,7 @@ const router = express.Router();
 
 router.post(
   "/",
+  verifyToken,
   body("email").isEmail().bail().escape(),
   async (
     req: express.Request<never, never, { email: string }>,

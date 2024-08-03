@@ -27,7 +27,6 @@ const router = express.Router();
 
 router.post(
   "/",
-  verifyToken,
   validatedUserId,
   validatedJournal,
   async (

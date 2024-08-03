@@ -36,7 +36,6 @@ interface IRequestBody {
 
 router.post(
   "/",
-  verifyToken,
   validatedUserId,
   validatedJournal,
   async (

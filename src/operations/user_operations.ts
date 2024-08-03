@@ -1,5 +1,6 @@
 import {
   Collection,
+  DeleteResult,
   Filter,
   FindOptions,
   InsertOneOptions,
@@ -64,6 +65,20 @@ export async function insertOne(
   try {
     await client.connect();
     return await usersCollection(client).insertOne(document);
+  } catch (error) {
+    // TODO: what type of errors? Handle specific errors?
+    throw error;
+  } finally {
+    client.close();
+  }
+}
+
+// DELETE ALL
+export async function deleteMany(): Promise<DeleteResult> {
+  const client = await getClient();
+  try {
+    await client.connect();
+    return await usersCollection(client).deleteMany();
   } catch (error) {
     // TODO: what type of errors? Handle specific errors?
     throw error;

@@ -37,7 +37,6 @@ const validatedStrings = body(["userId", "category"])
 
 router.post(
   "/",
-  verifyToken,
   validatedStrings,
   validatedJournalIds,
   async (

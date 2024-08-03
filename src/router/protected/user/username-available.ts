@@ -10,6 +10,7 @@ const router = express.Router();
 
 router.post(
   "/",
+  verifyToken,
   body("username").notEmpty().bail().isString().bail().escape(),
   async (
     req: express.Request<never, never, { username: string }>,

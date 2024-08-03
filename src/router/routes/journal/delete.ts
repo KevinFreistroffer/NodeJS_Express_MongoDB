@@ -34,7 +34,6 @@ const router = express.Router();
 
 router.put(
   "/",
-  verifyToken,
   validatedUserId,
   validatedJournalIds,
   async (req: express.Request<never, IResponseBody, IRequestBody>, res) => {

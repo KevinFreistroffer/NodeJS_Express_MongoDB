@@ -14,7 +14,6 @@ interface IResponseBody {
 
 router.get(
   "/:userId",
-  verifyToken,
   async (req: express.Request, res: express.Response<IResponseBody>) => {
     console.log("[Journal/Journals] GET reached", req.params.userId);
     try {

@@ -15,6 +15,7 @@ const router = express.Router();
 
 router.delete(
   "/",
+  verifyToken,
   async (req: express.Request, res: express.Response<IResponseBody>) => {
     try {
       console.log("[/delete-all] reached...");
