@@ -19,6 +19,7 @@ import { ObjectId } from "mongodb";
 import { verifyToken } from "../../../middleware";
 import { convertDocToSafeUser } from "../../../utils";
 import { UserProjection } from "../../../defs/models/user.model";
+import { findOneById, updateOne } from "../../../operations/user_operations";
 
 const router = express.Router();
 
@@ -60,10 +61,8 @@ router.post(
       }
 
       const { userId, journalIds, category } = req.body;
-      const client = await getConnectedClient();
-      const users = usersCollection(client);
 
-      const doc = await users.findOne({ _id: new ObjectId(userId) });
+      const doc = await findOneById(new ObjectId());
 
       /*--------------------------------------------------
        *  User not found
@@ -88,7 +87,7 @@ router.post(
       /*--------------------------------------------------
        *  Save the updated user.journals
        *------------------------------------------------*/
-      const updatedDoc = await users.updateOne(
+      const updatedDoc = await updateOne(
         { _id: new ObjectId(userId) },
         {
           $set: {
@@ -101,10 +100,7 @@ router.post(
         return res.json(responses.error_updating_user());
       }
 
-      const savedDoc = await users.findOne<ISanitizedUser>(
-        { _id: new ObjectId(userId) },
-        { projection: UserProjection }
-      );
+      const savedDoc = await findOneById(new ObjectId(userId));
 
       if (!savedDoc) {
         return res.json(

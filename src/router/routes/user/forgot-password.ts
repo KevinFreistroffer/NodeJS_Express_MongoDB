@@ -16,7 +16,7 @@ router.post(
   "/",
   body("email").isEmail().bail().normalizeEmail(),
   async (
-    req: express.Request<never, never, { email: string }>,
+    req: express.Request<any, any, { email: string }>,
     res: express.Response<IResponseBody>
   ) => {
     console.log("[user/forgot-password] reached...");

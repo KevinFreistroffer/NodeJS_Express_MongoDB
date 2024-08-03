@@ -28,7 +28,7 @@ router.post(
   validatedToken,
   validatedPassword,
   async (
-    req: express.Request<never, never, { token: string; password: string }>,
+    req: express.Request<any, any, { token: string; password: string }>,
     res: express.Response<IResponseBody>
   ) => {
     try {

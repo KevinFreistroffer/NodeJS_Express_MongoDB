@@ -13,6 +13,11 @@ import { getConnectedClient, usersCollection } from "../../../db";
 import { ObjectId } from "mongodb";
 import { verifyToken } from "../../../middleware";
 import { UserProjection } from "../../../defs/models/user.model";
+import {
+  findOne,
+  findOneById,
+  updateOne,
+} from "../../../operations/user_operations";
 const router = express.Router();
 const days = ["Sun", "Mon", "Tue", "Wed", "Thur", "Fri", "Sat"];
 const validatedUserId = body("userId") // TODO convert to zod?
@@ -39,7 +44,7 @@ router.post(
   validatedUserId,
   validatedJournal,
   async (
-    req: express.Request<never, never, IRequestBody>,
+    req: express.Request<any, any, IRequestBody>,
     res: express.Response<IResponseBody>
   ) => {
     try {
@@ -60,8 +65,7 @@ router.post(
        * MongoDB User collection
        *------------------------------------------------*/
       const { userId, title, entry, category } = req.body;
-      const client = await getConnectedClient();
-      const users = usersCollection(client);
+
       let day = moment().day();
       let date = `${days[day]}, ${moment().format("MM-DD-YYYY")}`;
       const journal: IJournal = {
@@ -77,7 +81,7 @@ router.post(
        *  Update user's journals
        *------------------------------------------------*/
       // const doc = await users.findOneAndUpdate({ _id: new ObjectId(userId) });
-      const doc = await users.updateOne(
+      const doc = await updateOne(
         { _id: new ObjectId(userId) },
         {
           $addToSet: {
@@ -89,18 +93,14 @@ router.post(
               selected: false,
             },
           },
-        },
-        { upsert: false }
+        }
       );
 
       if (!doc.acknowledged || !doc.upsertedId) {
         return res.json(responses.error_updating_user());
       }
 
-      const foundDoc = await users.findOne(
-        { _id: new ObjectId(doc.upsertedId) },
-        { projection: UserProjection }
-      );
+      const foundDoc = await findOneById(new ObjectId(doc.upsertedId));
 
       if (!foundDoc) {
         return res.json(responses.user_not_found());

@@ -42,6 +42,7 @@ export const getConnectedClient = async () => {
 
 export const usersCollection = (client: MongoClient) => {
   const db = client.db("user-journal");
+  return db.collection<IUser>("users");
   //www.mongodb.com/resources/products/compatibilities/using-typescript-with-mongodb-tutorial
   // await db.command({
   //   collMod: "process.env.GAMES_COLLECTION_NAME",
@@ -68,8 +69,6 @@ export const usersCollection = (client: MongoClient) => {
   //     },
   //   },
   // });
-
-  return db.collection<IUser>("users");
 };
 
 export const sessionsCollection = (client: MongoClient) => {

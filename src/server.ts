@@ -104,7 +104,7 @@ export async function server() {
     //    res.render('error', {
     //      message: err.message,
     //      error: err
-    //    });
+    //    }); this is maybe a sticky keyboard. not sure 
     //  });
     // }
 

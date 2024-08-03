@@ -30,7 +30,7 @@ router.post(
   validatedUserId,
   validatedJournal,
   async (
-    req: express.Request<never, never, { userId: string; category: string }>,
+    req: express.Request<any, any, { userId: string; category: string }>,
     res: express.Response<IResponse>
   ) => {
     console.log("[Journal/NewCategory] POST reached");

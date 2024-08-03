@@ -39,7 +39,7 @@ router.post(
     .escape(),
   body("email").notEmpty().bail().isEmail().bail().escape(),
   async (
-    req: express.Request<IRequestBody>,
+    req: express.Request<any, any, IRequestBody>,
     res: express.Response<IResponseBody>
   ) => {
     console.log("/user/signup reached...");
@@ -53,7 +53,7 @@ router.post(
         return res.status(422).json(responses.missing_body_fields());
       }
 
-      const { username, userId, email, password } = req.body;
+      const { username, email, password } = req.body;
       const doc = await findOneByUsernameOrEmail(username, email);
 
       if (doc) {

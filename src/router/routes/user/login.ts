@@ -46,7 +46,7 @@ router.post(
   "/",
   validatedFields,
   async (
-    req: express.Request<IRequestBody>,
+    req: express.Request<any, any, IRequestBody>,
     res: express.Response<IResponseBody>
   ) => {
     try {

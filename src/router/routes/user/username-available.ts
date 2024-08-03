@@ -13,7 +13,7 @@ router.post(
   "/",
   body("username").notEmpty().bail().isString().bail().escape(),
   async (
-    req: express.Request<never, never, { username: string }>,
+    req: express.Request<any, any, { username: string }>,
     res: express.Response<IResponseBody>
   ) => {
     try {

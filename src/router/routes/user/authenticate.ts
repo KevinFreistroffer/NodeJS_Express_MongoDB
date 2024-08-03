@@ -18,7 +18,7 @@
 //   "/",
 //   body("token").notEmpty().bail().isString().bail().escape(),
 //   async (
-//     req: express.Request<never, never, { token: string }>,
+//     req: express.Request<any, any, { token: string }>,
 //     res: express.Response<IResponseBody>
 //   ) => {
 //     try {

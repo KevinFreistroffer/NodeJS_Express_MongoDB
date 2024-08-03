@@ -13,6 +13,8 @@ import { has } from "lodash";
 import { getConnectedClient, usersCollection } from "../../../db";
 import { ObjectId } from "mongodb";
 import { verifyToken } from "../../../middleware";
+import { findOneById, updateOne } from "../../../operations/user_operations";
+import { IResponseBody, responses } from "../../../defs/responses";
 const router = express.Router();
 const validatedIds = body(["userId", "journalId"]) // TODO convert to zod?
   .notEmpty()
@@ -29,26 +31,11 @@ interface IRequestBody {
   category: string | undefined;
 }
 
-interface IResponseBody {
-  success: boolean;
-  message: string;
-  data:
-    | Omit<
-        IUser,
-        | "password"
-        | "usernameNormalized"
-        | "emailNormalized"
-        | "resetPasswordToken"
-        | "resetPasswordExpires"
-        | "jwtToken"
-      >
-    | undefined;
-}
 router.post(
   "/",
   validatedIds,
   async (
-    req: express.Request<never, never, IRequestBody>,
+    req: express.Request<any, any, IRequestBody>,
     res: express.Response<IResponseBody>
   ) => {
     console.log("[Journal/Edit] POST reached");
@@ -61,11 +48,7 @@ router.post(
           !has(req.body, "entry") &&
           !has(req.body, "category"))
       ) {
-        return res.status(422).json({
-          success: false,
-          message: "Invalid request body fields.",
-          data: undefined,
-        });
+        return res.status(422).json(responses.missing_body_fields());
       }
 
       console.log(validatedFields);
@@ -91,7 +74,7 @@ router.post(
       }
       const client = await getConnectedClient();
       const users = usersCollection(client);
-      const doc = await users.findOneAndUpdate(
+      const doc = await updateOne(
         {
           _id: new ObjectId(userId),
           "journals._id": new ObjectId(journalId),
@@ -103,20 +86,25 @@ router.post(
       );
 
       if (!doc) {
-        return res.status(404).json({
-          success: false,
-          message: "User not found.",
-          data: undefined,
-        });
       }
 
-      console.log(doc);
+      if (!doc.matchedCount) {
+        return res.status(404).json(responses.user_not_found());
+      }
 
-      return res.send({
-        success: true,
-        message: "Journal updated.",
-        data: doc,
-      });
+      if (!doc.modifiedCount) {
+        return res.json(responses.error_updating_user());
+      }
+
+      const userDoc = await findOneById(new ObjectId(userId));
+
+      if (!userDoc) {
+        res.json(
+          responses.user_not_found("Could not find the updated server.")
+        );
+      }
+
+      return res.send(responses.success(userDoc));
 
       // doc.journals.forEach((journal) => {
       //   if ((journal as IJournalDoc)._id?.toString() === journalId) {
@@ -139,11 +127,7 @@ router.post(
     } catch (error) {
       console.log("Error updated users journal: ", error);
 
-      return res.status(500).json({
-        success: false,
-        message: "Caught error: " + error,
-        data: undefined,
-      });
+      return res.status(500).json(responses.caught_error(error));
     }
   }
 );

@@ -14,7 +14,7 @@ router.post(
   "/",
   body("email").isEmail().bail().escape(),
   async (
-    req: express.Request<never, never, { email: string }>,
+    req: express.Request<any, any, { email: string }>,
     res: express.Response<IResponseBody>
   ) => {
     const validatedErrors = validationResult(req).array();
