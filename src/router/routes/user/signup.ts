@@ -9,7 +9,11 @@ import { IResponseBody, responses } from "../../../defs/responses";
 import { getConnectedClient, usersCollection } from "../../../db";
 import { ISanitizedUser, IUser } from "../../../defs/interfaces";
 import { convertDocToSafeUser, hashPassword } from "../../../utils";
-import { findByUsernameOrEmail } from "../../../operations/user";
+import {
+  findByUsernameOrEmail,
+  findOneById,
+  insertOne,
+} from "../../../operations/user_operations";
 
 const router = express.Router();
 
@@ -39,6 +43,7 @@ router.post(
     res: express.Response<IResponseBody>
   ) => {
     console.log("/user/signup reached...");
+
     try {
       /*--------------------------------------------------
        *  Validate request body.
@@ -74,7 +79,8 @@ router.post(
       /*--------------------------------------------------
        *  Save the user
        *------------------------------------------------*/
-      const insertDoc = await users.insertOne({
+
+      const insertDoc = await insertOne({
         username,
         usernameNormalized: username.toLowerCase(),
         email,
@@ -86,6 +92,8 @@ router.post(
         journalCategories: [],
       });
 
+      console.log(insertDoc);
+
       if (!insertDoc.acknowledged) {
         throw new Error("Could not insert document. Try again.");
       }
@@ -93,13 +101,11 @@ router.post(
       /*--------------------------------------------------
        *  Find the newly created user doc
        *------------------------------------------------*/
-      const newUserDoc = await users.findOne(
-        { _id: insertDoc.insertedId },
-        { projection: UserProjection }
-      );
+      const newUserDoc = await findOneById(insertDoc.insertedId);
+      console.log("newUserDoc", newUserDoc);
 
       if (!newUserDoc) {
-        throw new Error("Error finding the newly created user's ObjectId.");
+        throw new Error("Error finding the new User ObjectId.");
       }
 
       return res.json(responses.success(convertDocToSafeUser(newUserDoc)));
@@ -108,10 +114,10 @@ router.post(
 
       // MongoDB error types
       // WriteError = DuplicateKey
-      // WriteConcernError = 
-      if (error instanceof WriteError) {
-        return res.json(responses.username_or_email_already_registered());
-      }
+      // WriteConcernError =
+      // if (error instanceof WriteError) {
+      //   return res.json(responses.username_or_email_already_registered());
+      // }
 
       return res.status(500).json(responses.caught_error(error));
     }

@@ -45,6 +45,13 @@
 //   UserSchema
 // );
 
+export interface IUserProjection {
+  username: 1;
+  email: 1;
+  journals: 1;
+  journalCategories: 1;
+}
+
 export const UserProjection = {
   username: 1,
   email: 1,

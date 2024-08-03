@@ -139,7 +139,7 @@ export const responses: IResponseBodies = {
   caught_error: (error: any) => ({
     message: EMessageType.error,
     data: {
-      description: `Caught error: " ${
+      description: `Caught error:" ${
         error instanceof Error ? error.message : error
       }`,
       code: 1012,

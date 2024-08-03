@@ -18,6 +18,7 @@ import { EMessageType } from "../../../defs/enums";
 import { ISanitizedUser, IUser } from "../../../defs/interfaces";
 import { getConnectedClient, usersCollection } from "../../../db";
 import { convertDocToSafeUser } from "../../../utils";
+import { findOne } from "../../../operations/user_operations";
 
 const router = express.Router();
 
@@ -80,14 +81,17 @@ router.post(
       /*--------------------------------------------------
        * Does the user exist?
        *------------------------------------------------*/
-      const UNSAFE_FOUND_USER = await users.findOne({
-        $or: [{ username: usernameOrEmail }, { email: usernameOrEmail }],
-      });
+      const UNSAFE_DOC = await findOne(
+        {
+          $or: [{ username: usernameOrEmail }, { email: usernameOrEmail }],
+        },
+        false
+      );
 
       /*--------------------------------------------------
        * User NOT found
        *------------------------------------------------*/
-      if (!UNSAFE_FOUND_USER) {
+      if (!UNSAFE_DOC) {
         console.log("User doesn't exist.");
 
         return res.status(200).json(responses.user_not_found());
@@ -99,7 +103,7 @@ router.post(
        *------------------------------------------------*/
       const passwordsMatch = await bcrypt.compare(
         password,
-        UNSAFE_FOUND_USER.password
+        UNSAFE_DOC.password
       );
       console.log(passwordsMatch);
 
@@ -122,13 +126,9 @@ router.post(
         console.log("User chose to stay logged in. Generating a JWT");
 
         // const timeStamp = moment().add(14, "days");
-        jwtToken = sign(
-          { data: UNSAFE_FOUND_USER._id.toString() },
-          config.jwtSecret,
-          {
-            expiresIn: config.jwtTokenExpiresIn,
-          }
-        );
+        jwtToken = sign({ data: UNSAFE_DOC._id.toString() }, config.jwtSecret, {
+          expiresIn: config.jwtTokenExpiresIn,
+        });
 
         if (!jwtToken) {
           throw new Error("Error generating JWT token.");

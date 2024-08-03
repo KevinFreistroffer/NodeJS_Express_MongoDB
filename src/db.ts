@@ -37,7 +37,6 @@ export const getConnectedClient = async () => {
     },
   });
 
-  await client.connect();
   return client;
 };
 
@@ -70,7 +69,7 @@ export const usersCollection = (client: MongoClient) => {
   //   },
   // });
 
-  return db.collection<IUser>("users") as Collection<IUser>;
+  return db.collection<IUser>("users");
 };
 
 export const sessionsCollection = (client: MongoClient) => {

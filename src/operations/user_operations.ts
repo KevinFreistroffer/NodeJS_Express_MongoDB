@@ -1,4 +1,5 @@
 import {
+  Collection,
   Filter,
   FindOptions,
   InsertOneOptions,
@@ -13,57 +14,61 @@ import {
 import { getClient, getConnectedClient, usersCollection } from "../db";
 import { ISanitizedUser, IUser } from "../defs/interfaces";
 import { UserProjection } from "../defs/models/user.model";
-import { Collection } from "mongoose";
 
-async function insertOne(
-  collection: Collection<IUser>,
-  document: OptionalId<IUser>,
-  options?: InsertOneOptions | undefined
-): Promise<InsertOneResult<IUser>> {
+// FIND ONE
+export async function findOne(
+  query: Filter<IUser>,
+  sanitize: true
+): Promise<ISanitizedUser>;
+export async function findOne(
+  query: Filter<WithId<IUser>>,
+  sanitize: false
+): Promise<WithId<IUser>>;
+export async function findOne(
+  query: Filter<IUser>,
+  sanitize: boolean = true
+): Promise<IUser | ISanitizedUser | null> {
+  const client = await getClient();
+
   try {
-    const result = await collection.insertOne(document);
-
-    return result;
+    await client.connect();
+    return await usersCollection(client).findOne<IUser | ISanitizedUser>(
+      query,
+      {
+        projection: sanitize ? UserProjection : undefined,
+      }
+    );
   } catch (error) {
-    // writeErrror
-    // writeConvertionError
-
-    if (error instanceof WriteError) {
-      // ...
-    }
-
-    if (error instanceof WriteConcernError) {
-      // ...
-    }
     throw error;
+  } finally {
+    await client.close();
   }
 }
 
-async function findOneById(
-  collection: Collection<IUser>,
-  id: ObjectId
-  // options: FindOptions<Document> = { projection: UserProjection } // incompatible types, why?
-): Promise<WithId<IUser> | null> {
+export const findOneById = async (id: ObjectId) =>
+  await findOne({ _id: id }, true);
+
+export const findByUsernameOrEmail = async (username: string, email: string) =>
+  await findOne(
+    {
+      $or: [{ username }, { email }],
+    },
+    true
+  );
+
+// INSERT ONE
+export async function insertOne(
+  document: OptionalId<IUser>
+): Promise<InsertOneResult<IUser>> {
+  const client = await getClient();
   try {
-    //www.mongodb.com/docs/manual/reference/command/find/#mongodb-dbcommand-dbcmd.find
-    const result = await collection.findOne(
-      { _id: id },
-      { projection: UserProjection }
-    );
-
-    return result;
+    await client.connect();
+    return await usersCollection(client).insertOne(document);
   } catch (error) {
-    // writeErrror
-    // writeConvertionError
-
-    if (error instanceof WriteError) {
-      // ...
-    }
-
-    if (error instanceof WriteConcernError) {
-      // ...
-    }
+    // TODO: what type of errors? Handle specific errors?
     throw error;
+  } finally {
+    client.close();
   }
 }
 
@@ -85,28 +90,6 @@ async function findOneById(
 //     client.close();
 //   }
 // }
-
-// Read documents
-export async function findByUsernameOrEmail(username: string, email: string) {
-  const client = await getConnectedClient();
-
-  try {
-    await client.connect();
-    const users = await usersCollection(client);
-    return await users.findOne<ISanitizedUser>(
-      {
-        $or: [{ username }, { email }],
-      },
-      { projection: UserProjection }
-    );
-  } catch (error) {
-    console.error("[findByUsernameOrEmail] Caught Error:" + error, error);
-
-    throw new Error("Error finding user by username or email:" + error);
-  } finally {
-    client.close();
-  }
-}
 
 // // Update a document
 // async function updateDocument(id: string, update: any) {
