@@ -5,8 +5,8 @@ import * as express from "express";
 import { has } from "lodash";
 import { body } from "express-validator";
 import { IResponseBody, responses } from "../../../defs/responses";
-import { getConnectedClient, usersCollection } from "../../../db";
-import { verifyToken } from "../../../middleware";
+import { findOne, findOneByEmail } from "../../../operations/user_operations";
+
 const { query, validationResult } = require("express-validator");
 const router = express.Router();
 
@@ -27,22 +27,12 @@ router.post(
       }
 
       const email = req.body.email;
-      const client = await getConnectedClient();
-      const users = await usersCollection(client);
-      const doc = await users.findOne({ emailNormalized: email });
+      const doc = await findOneByEmail(email);
 
-      /*--------------------------------------------------
-       * User NOT found.
-       * Email IS available.
-       *------------------------------------------------*/
       if (!doc) {
         return res.json(responses.user_not_found());
       }
 
-      /*--------------------------------------------------
-       * User found.
-       * Email is NOT available.
-       *------------------------------------------------*/
       console.log("Email is registered.");
       console.log("Found doc id", doc._id);
       return res.json(responses.email_already_registered());

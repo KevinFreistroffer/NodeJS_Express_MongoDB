@@ -10,7 +10,7 @@ import { getConnectedClient, usersCollection } from "../../../db";
 import { ISanitizedUser, IUser } from "../../../defs/interfaces";
 import { convertDocToSafeUser, hashPassword } from "../../../utils";
 import {
-  findByUsernameOrEmail,
+  findOneByUsernameOrEmail,
   findOneById,
   insertOne,
 } from "../../../operations/user_operations";
@@ -67,7 +67,7 @@ router.post(
       /*--------------------------------------------------
        *  Find user by username or email.
        *------------------------------------------------*/
-      const doc = await findByUsernameOrEmail(username, email);
+      const doc = await findOneByUsernameOrEmail(username, email);
 
       /*--------------------------------------------------
        *  Username and/or Email are already registered.

@@ -6,6 +6,7 @@ import { body, validationResult } from "express-validator";
 import { IResponseBody, responses } from "../../../defs/responses";
 import { getConnectedClient, usersCollection } from "../../../db";
 import { verifyToken } from "../../../middleware";
+import { findOneByUsername } from "../../../operations/user_operations";
 const router = express.Router();
 
 router.post(
@@ -24,24 +25,13 @@ router.post(
         return res.status(422).json(responses.missing_body_fields());
       }
 
-      const client = await getConnectedClient();
-      const users = await usersCollection(client);
-      const doc = await users.findOne(
-        {
-          usernameNormalized: req.body.username.toLowerCase(),
-        },
-        { projection: UserProjection }
-      );
+      const doc = await findOneByUsername(req.body.username);
       console.log("User.find by username complete ... ");
-      /*--------------------------------------------------
-       * 'Username' is already registered to a user
-       *------------------------------------------------*/
+
       if (!doc) {
         return res.json(responses.username_already_registered());
       }
-      /*--------------------------------------------------
-       * 'Username' is NOT registered to a user.
-       *------------------------------------------------*/
+
       console.log("Username is already registered.");
       console.log("doc", doc);
       return res.json(responses.username_or_email_already_registered());

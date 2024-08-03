@@ -46,6 +46,7 @@
 // );
 
 export interface IUserProjection {
+  _id: 1;
   username: 1;
   email: 1;
   journals: 1;
@@ -53,6 +54,7 @@ export interface IUserProjection {
 }
 
 export const UserProjection = {
+  _id: 1,
   username: 1,
   email: 1,
   journals: 1,

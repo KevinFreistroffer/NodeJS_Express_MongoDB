@@ -17,18 +17,27 @@ import { ISanitizedUser, IUser } from "../defs/interfaces";
 import { UserProjection } from "../defs/models/user.model";
 
 // FIND ONE
-export async function findOne(
-  query: Filter<IUser>,
-  sanitize: true
-): Promise<ISanitizedUser>;
-export async function findOne(
-  query: Filter<WithId<IUser>>,
-  sanitize: false
-): Promise<WithId<IUser>>;
-export async function findOne(
-  query: Filter<IUser>,
-  sanitize: boolean = true
-): Promise<IUser | ISanitizedUser | null> {
+export async function findOne({
+  query,
+  sanitize,
+}: {
+  query: Filter<IUser>;
+  sanitize: true;
+}): Promise<WithId<ISanitizedUser>>;
+export async function findOne({
+  query,
+  sanitize,
+}: {
+  query: Filter<IUser>;
+  sanitize: false;
+}): Promise<WithId<IUser>>;
+export async function findOne({
+  query,
+  sanitize,
+}: {
+  query: Filter<IUser>;
+  sanitize: boolean;
+}): Promise<IUser | ISanitizedUser | null> {
   const client = await getClient();
 
   try {
@@ -47,15 +56,24 @@ export async function findOne(
 }
 
 export const findOneById = async (id: ObjectId) =>
-  await findOne({ _id: id }, true);
+  await findOne({ query: { _id: id }, sanitize: true });
 
-export const findByUsernameOrEmail = async (username: string, email: string) =>
-  await findOne(
-    {
+export const findOneByEmail = async (email: string) =>
+  await findOne({ query: { email }, sanitize: true });
+
+export const findOneByUsername = async (username: string) =>
+  await findOne({ query: { username }, sanitize: true });
+
+export const findOneByUsernameOrEmail = async (
+  username: string,
+  email: string
+) =>
+  await findOne({
+    query: {
       $or: [{ username }, { email }],
     },
-    true
-  );
+    sanitize: true,
+  });
 
 // INSERT ONE
 export async function insertOne(
