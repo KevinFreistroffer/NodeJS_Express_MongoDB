@@ -34,6 +34,7 @@ export interface IResponseBodies {
   username_already_registered: (description?: string) => IResponseBody;
   email_already_registered: (description?: string) => IResponseBody;
   caught_error: (error: unknown) => IResponseBody;
+  error_inserting_user: (description?: string) => IResponseBody;
   error_updating_user: (description?: string) => IResponseBody;
   success: (user?: ISanitizedUser | ISanitizedUser[]) => IResponseBody;
 }
@@ -146,11 +147,19 @@ export const responses: IResponseBodies = {
       user: undefined,
     },
   }),
+  error_inserting_user: (description) => ({
+    message: EMessageType.error,
+    data: {
+      description: description || "Could not insert the user. Try again.",
+      code: 1013,
+      user: undefined,
+    },
+  }),
   error_updating_user: (description) => ({
     message: EMessageType.error,
     data: {
       description: description || "Could not update the user. Try again.",
-      code: 1013,
+      code: 1014,
       user: undefined,
     },
   }),

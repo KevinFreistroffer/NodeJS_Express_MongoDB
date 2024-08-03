@@ -60,7 +60,7 @@ router.post(
         : true;
 
       const validatedResults = validationResult(req);
-      console.log("validatedResults", validatedResults);
+
       if (validatedResults.array().length || !validStaySignedIn) {
         return res.status(422).json(responses.missing_body_fields());
       }
@@ -73,20 +73,14 @@ router.post(
       console.log("request body: ", req.body, staySignedIn);
 
       /*--------------------------------------------------
-       * MongoDB connection and collection
-       *------------------------------------------------*/
-      const client = await getConnectedClient();
-      const users = await usersCollection(client);
-
-      /*--------------------------------------------------
        * Does the user exist?
        *------------------------------------------------*/
-      const UNSAFE_DOC = await findOne(
-        {
+      const UNSAFE_DOC = await findOne({
+        query: {
           $or: [{ username: usernameOrEmail }, { email: usernameOrEmail }],
         },
-        false
-      );
+        sanitize: false,
+      });
 
       /*--------------------------------------------------
        * User NOT found

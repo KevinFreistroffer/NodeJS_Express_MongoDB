@@ -8,6 +8,7 @@ import { body, validationResult } from "express-validator";
 import { ISanitizedUser } from "../../../defs/interfaces";
 import { IResponseBody, responses } from "../../../defs/responses";
 import { getConnectedClient, usersCollection } from "../../../db";
+import { updateOne } from "../../../operations/user_operations";
 const router = express.Router();
 let crypto = require("node:crypto");
 
@@ -27,20 +28,14 @@ router.post(
       }
 
       const { email } = req.body;
-
-      // Look for a user based on their email
-      const client = await getConnectedClient();
-      const users = await usersCollection(client);
       const token = crypto.randomBytes(20).toString("hex");
       const date = new Date();
       date.setTime(date.getTime() + 3 * 60 * 60 * 1000); // 3 hours
-      const doc = await users.updateOne(
+      const doc = await updateOne(
         { email },
         { resetPasswordToken: token, resetPasswordExpires: date }
       );
-      /*--------------------------------------------------
-       * User NOT found
-       *------------------------------------------------*/
+
       if (!doc.acknowledged) {
         console.log("User not found.");
 

@@ -53,25 +53,9 @@ router.post(
         return res.status(422).json(responses.missing_body_fields());
       }
 
-      /*--------------------------------------------------
-       *  Valid request body.
-       *------------------------------------------------*/
       const { username, userId, email, password } = req.body;
-
-      /*--------------------------------------------------
-       *  MongoDB User collection
-       *------------------------------------------------*/
-      const client = await getConnectedClient();
-      const users = await usersCollection(client);
-
-      /*--------------------------------------------------
-       *  Find user by username or email.
-       *------------------------------------------------*/
       const doc = await findOneByUsernameOrEmail(username, email);
 
-      /*--------------------------------------------------
-       *  Username and/or Email are already registered.
-       *------------------------------------------------*/
       if (doc) {
         return res.json(responses.username_or_email_already_registered());
       }
@@ -92,23 +76,18 @@ router.post(
         journalCategories: [],
       });
 
-      console.log(insertDoc);
-
-      if (!insertDoc.acknowledged) {
-        throw new Error("Could not insert document. Try again.");
+      if (!insertDoc.acknowledged || !insertDoc.insertedId) {
+        return res.json(responses.error_inserting_user());
       }
 
-      /*--------------------------------------------------
-       *  Find the newly created user doc
-       *------------------------------------------------*/
-      const newUserDoc = await findOneById(insertDoc.insertedId);
-      console.log("newUserDoc", newUserDoc);
+      const userDoc = await findOneById(insertDoc.insertedId);
+      console.log("newUserDoc", userDoc);
 
-      if (!newUserDoc) {
+      if (!userDoc) {
         throw new Error("Error finding the new User ObjectId.");
       }
 
-      return res.json(responses.success(convertDocToSafeUser(newUserDoc)));
+      return res.json(responses.success(convertDocToSafeUser(userDoc)));
     } catch (error) {
       console.log("[/user/signup] caught error.", error);
 

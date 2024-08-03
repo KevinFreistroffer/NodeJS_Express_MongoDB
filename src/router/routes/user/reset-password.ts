@@ -7,6 +7,7 @@ import { body, validationResult } from "express-validator";
 
 import { IResponseBody, responses } from "../../../defs/responses";
 import { getConnectedClient, usersCollection } from "../../../db";
+import { findOneById, updateOne } from "../../../operations/user_operations";
 const router = express.Router();
 const passwordHash = require("password-hash");
 const validatedToken = body("token")
@@ -40,19 +41,20 @@ router.post(
       // TODO: validate the JWT token. There needs to be an authentication step here prior to editing the password.
 
       const hashedPassword = passwordHash.generate(req.body.password);
-      const client = await getConnectedClient();
-      const users = await usersCollection(client);
-      const doc = await users.findOneAndUpdate(
+      const doc = await updateOne(
         {
           resetPasswordToken: req.body.token,
           resetPasswordExpires: { $gt: new Date(Date.now()) },
         },
         { password: hashedPassword }
       );
-      console.log(doc);
 
-      if (!doc) {
+      if (!doc.matchedCount) {
         return res.status(200).json(responses.user_not_found());
+      }
+
+      if (!doc.modifiedCount) {
+        return res.status(200).json(responses.error_updating_user());
       }
 
       // Updating user object
@@ -64,19 +66,19 @@ router.post(
 
       // Send Confirmation Email
       const transporter = nodemailer.createTransport(
-        `smtps://${config.email.fromEmail}:${config.email.password}@smtp.gmail.com`
+        `smtps://${encodeURIComponent(
+          config.email.fromEmail
+        )}:${encodeURIComponent(config.email.password)}@smtp.gmail.com`
       );
 
       // setup e-mail data with unicode symbols
       const mailOptions = {
-        from: '"iBlog 👥" <kevin.freistroffer@gmail.com>', // sender address
-        to: "kevin.freistroffer@gmail.com", // list of receivers
-        subject: "Password Reset Confirmation", // Subject line
+        from: '"iBlog 👥" <kevin.freistroffer@gmail.com>',
+        to: "kevin.freistroffer@gmail.com", // TODO set this to the email
+        subject: "Password Reset Confirmation",
         text:
-          "Hello,\n\n" +
-          "This is a confirmation that the password for your account " +
-          doc.email +
-          " has just been changed.\n",
+          "Hi,\n\n" +
+          "This is a confirmation that the password for your account has just been changed.\n",
       };
 
       // send mail with defined transport object

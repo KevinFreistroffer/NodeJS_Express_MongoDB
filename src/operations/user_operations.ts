@@ -8,6 +8,7 @@ import {
   MongoClient,
   ObjectId,
   OptionalId,
+  UpdateResult,
   WithId,
   WriteConcernError,
   WriteError,
@@ -16,7 +17,9 @@ import { getClient, getConnectedClient, usersCollection } from "../db";
 import { ISanitizedUser, IUser } from "../defs/interfaces";
 import { UserProjection } from "../defs/models/user.model";
 
-// FIND ONE
+/**
+ * Find one
+ */
 export async function findOne({
   query,
   sanitize,
@@ -55,15 +58,32 @@ export async function findOne({
   }
 }
 
+/**
+ * Find one by ID
+ * @param id
+ */
 export const findOneById = async (id: ObjectId) =>
   await findOne({ query: { _id: id }, sanitize: true });
 
+/**
+ * Find one by email
+ * @param email
+ */
 export const findOneByEmail = async (email: string) =>
   await findOne({ query: { email }, sanitize: true });
 
+/**
+ * Find one by username
+ * @param username
+ */
 export const findOneByUsername = async (username: string) =>
   await findOne({ query: { username }, sanitize: true });
 
+/**
+ * Find one by username or email
+ * @param username
+ * @param email
+ */
 export const findOneByUsernameOrEmail = async (
   username: string,
   email: string
@@ -75,7 +95,10 @@ export const findOneByUsernameOrEmail = async (
     sanitize: true,
   });
 
-// INSERT ONE
+/**
+ * Insert one
+ * @param document
+ */
 export async function insertOne(
   document: OptionalId<IUser>
 ): Promise<InsertOneResult<IUser>> {
@@ -91,7 +114,31 @@ export async function insertOne(
   }
 }
 
-// DELETE ALL
+/**
+ * Update one
+ * @param query
+ * @param update
+ */
+export async function updateOne(
+  query: Filter<IUser>,
+  update: Record<string, any> // possible to set what key's are valid? username,
+): Promise<UpdateResult<IUser>> {
+  const client = await getClient();
+  try {
+    await client.connect();
+    const doc = await usersCollection(client).updateOne(query, update);
+    return doc;
+  } catch (error) {
+    // TODO: what type of errors? Handle specific errors?
+    throw error;
+  } finally {
+    client.close();
+  }
+}
+
+/**
+ * Delete all documents
+ */
 export async function deleteMany(): Promise<DeleteResult> {
   const client = await getClient();
   try {
