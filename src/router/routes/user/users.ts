@@ -11,7 +11,7 @@ import { has } from "lodash";
 import { ISanitizedUser, IUser } from "../../../defs/interfaces";
 import {
   IResponseBody as _IResponseBody,
-  IResponseCode,
+  IResponseData,
   responses,
 } from "../../../defs/responses";
 import { ObjectId } from "mongodb";
@@ -20,7 +20,7 @@ import { verifyToken } from "../../../middleware";
 import { findAll, findAllUsers } from "../../../operations/user_operations";
 const router = express.Router();
 
-interface IData extends IResponseCode {
+interface IData extends IResponseData {
   users?: ISanitizedUser[];
 }
 interface IResponseBody extends _IResponseBody {

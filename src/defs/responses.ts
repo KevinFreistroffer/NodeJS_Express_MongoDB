@@ -1,7 +1,7 @@
 import { EMessageType } from "./enums";
 import { ISanitizedUser } from "./interfaces";
 
-export interface IResponseCode {
+export interface IResponseData {
   description: string;
   code: number;
   user?: ISanitizedUser | ISanitizedUser[];
@@ -9,14 +9,14 @@ export interface IResponseCode {
 
 export interface IResponseBody {
   message: EMessageType;
-  data: IResponseCode;
+  data: IResponseData;
 }
 
-export interface IDataWithUser extends IResponseCode {
+export interface IDataWithUser extends IResponseData {
   user: ISanitizedUser;
 }
 
-export interface IDataWithUsers extends IResponseCode {
+export interface IDataWithUsers extends IResponseData {
   users: ISanitizedUser[];
 }
 

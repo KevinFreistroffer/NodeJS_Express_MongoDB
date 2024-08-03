@@ -63,7 +63,6 @@ router.post(
       /*--------------------------------------------------
        *  Save the user
        *------------------------------------------------*/
-
       const insertDoc = await insertOne({
         username,
         usernameNormalized: username.toLowerCase(),
@@ -76,15 +75,18 @@ router.post(
         journalCategories: [],
       });
 
-      if (!insertDoc.acknowledged || !insertDoc.insertedId) {
+      if (!insertDoc.insertedId) {
         return res.json(responses.error_inserting_user());
       }
 
       const userDoc = await findOneById(insertDoc.insertedId);
-      console.log("newUserDoc", userDoc);
 
       if (!userDoc) {
-        throw new Error("Error finding the new User ObjectId.");
+        return res.json(
+          responses.user_not_found(
+            "Could not find the user after inserting it."
+          )
+        );
       }
 
       return res.json(responses.success(convertDocToSafeUser(userDoc)));

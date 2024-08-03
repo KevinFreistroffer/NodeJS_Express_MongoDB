@@ -11,7 +11,7 @@ import { body, validationResult } from "express-validator";
 import { has } from "lodash";
 import {
   IResponseBody as _IResponseBody,
-  IResponseCode,
+  IResponseData,
   responses,
 } from "../../../../src/defs/responses";
 import { EMessageType } from "../../../defs/enums";
@@ -28,7 +28,7 @@ interface IRequestBody {
   staySignedIn?: boolean;
 }
 
-interface IData extends IResponseCode {
+interface IData extends IResponseData {
   jwtToken?: string;
 }
 interface IResponseBody extends _IResponseBody {
@@ -50,9 +50,6 @@ router.post(
     res: express.Response<IResponseBody>
   ) => {
     try {
-      /*--------------------------------------------------
-       * Validates request body
-       *------------------------------------------------*/
       const validStaySignedIn = has(req.body, "staySignedIn")
         ? typeof req.body.staySignedIn === "boolean"
           ? true
@@ -65,16 +62,10 @@ router.post(
         return res.status(422).json(responses.missing_body_fields());
       }
 
-      /*--------------------------------------------------
-       * Valid request body
-       *------------------------------------------------*/
       const { usernameOrEmail, password, staySignedIn } = req.body;
       console.log("/login reached");
       console.log("request body: ", req.body, staySignedIn);
 
-      /*--------------------------------------------------
-       * Does the user exist?
-       *------------------------------------------------*/
       const UNSAFE_DOC = await findOne({
         query: {
           $or: [{ username: usernameOrEmail }, { email: usernameOrEmail }],
@@ -82,9 +73,6 @@ router.post(
         sanitize: false,
       });
 
-      /*--------------------------------------------------
-       * User NOT found
-       *------------------------------------------------*/
       if (!UNSAFE_DOC) {
         console.log("User doesn't exist.");
 
@@ -92,7 +80,6 @@ router.post(
       }
 
       /*--------------------------------------------------
-       * User DOES exist.
        * Compare passwords.
        *------------------------------------------------*/
       const passwordsMatch = await bcrypt.compare(
@@ -101,21 +88,14 @@ router.post(
       );
       console.log(passwordsMatch);
 
-      /*--------------------------------------------------
-       *  Invalid password
-       *------------------------------------------------*/
       if (!passwordsMatch) {
         return res.status(401).json(responses.invalid_password());
       }
 
-      /*--------------------------------------------------
-       *  Valid password
-       *------------------------------------------------*/
-      let jwtToken;
-
       /*-----------------------------------------------------
-       * Generate a JWT if the users chose to stay signed in.
+       * Generate a JWT
        *---------------------------------------------------*/
+      let jwtToken;
       if (staySignedIn) {
         console.log("User chose to stay logged in. Generating a JWT");
 

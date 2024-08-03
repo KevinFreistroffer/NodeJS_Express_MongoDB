@@ -7,15 +7,27 @@ import * as bcrypt from "bcryptjs";
 import { body, validationResult } from "express-validator";
 import { has } from "lodash";
 import { IUser } from "../../../defs/interfaces";
-import { IResponseBody, responses } from "../../../defs/responses";
+import {
+  IResponseBody,
+  IResponseData,
+  responses,
+} from "../../../defs/responses";
 import { getConnectedClient, usersCollection } from "../../../db";
 import { verifyToken } from "../../../middleware";
 import { deleteMany } from "../../../operations/user_operations";
 const router = express.Router();
 
+interface IData extends IResponseData {
+  deletedCount?: number;
+}
+
+interface _IResponseBody extends IResponseBody {
+  data: IData;
+}
+
 router.delete(
   "/",
-  async (req: express.Request, res: express.Response<IResponseBody>) => {
+  async (req: express.Request, res: express.Response<_IResponseBody>) => {
     try {
       console.log("[/delete-all] reached...");
 
@@ -28,7 +40,13 @@ router.delete(
       }
 
       // TODO: return []? Or fetch the db again, which is obviously the better idea.
-      return res.json(responses.success());
+      return res.json({
+        ...responses.success(),
+        data: {
+          ...responses.success().data,
+          deletedCount: doc.deletedCount,
+        },
+      });
     } catch (error) {
       console.log("[/delete-many] Caught error. Error: ", error);
 
