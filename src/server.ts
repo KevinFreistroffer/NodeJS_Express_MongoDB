@@ -32,7 +32,6 @@ const protectedRoutes = [
   "/journal/updateJournalCategories",
   "/journal/addCategory",
   "/journal/delete-all",
-  "/auth/bearer",
 ];
 
 // export default app;

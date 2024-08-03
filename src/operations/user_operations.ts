@@ -59,6 +59,36 @@ export async function findOne({
 }
 
 /**
+ * Find all users
+ */
+export async function findAllUsers(
+  sanitize: true
+): Promise<WithId<ISanitizedUser>[]>;
+export async function findAllUsers(sanitize: false): Promise<WithId<IUser>[]>;
+export async function findAllUsers(
+  sanitize: boolean
+): Promise<IUser[] | ISanitizedUser[] | null> {
+  const client = await getClient();
+
+  try {
+    await client.connect();
+    const doc = await usersCollection(client)
+      .find(
+        {},
+        {
+          projection: sanitize ? UserProjection : undefined,
+        }
+      )
+      .toArray();
+    return doc;
+  } catch (error) {
+    throw error;
+  } finally {
+    await client.close();
+  }
+}
+
+/**
  * Find one by ID
  * @param id
  */
