@@ -17,7 +17,7 @@ import {
 import { ObjectId } from "mongodb";
 import { getConnectedClient, usersCollection } from "../../../db";
 import { verifyToken } from "../../../middleware";
-import { findAllUsers } from "../../../operations/user_operations";
+import { findAll, findAllUsers } from "../../../operations/user_operations";
 const router = express.Router();
 
 interface IData extends IResponseCode {
@@ -33,8 +33,7 @@ router.get(
     try {
       console.log("[/users] reached...");
 
-      const doc = await findAllUsers(true);
-      console.log(doc);
+      const doc = await findAllUsers();
 
       return res.json({
         ...responses.success(),

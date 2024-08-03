@@ -9,7 +9,7 @@ import helmet from "helmet";
 import passport from "passport";
 import cors from "cors";
 import debug from "debug";
-import { verifyToken } from "./middleware";
+import { verifyAccessKey, verifyToken } from "./middleware";
 const { MongoClient, ServerApiVersion } = require("mongodb");
 // const cluster = require("cluster");
 // const path = require("path");
@@ -19,8 +19,6 @@ const swaggerSpec = require("../swagger-spec.json");
 const protectedRoutes = [
   "/user/username-available",
   "/user/email-available",
-  "/user/users",
-  "/user/delete-all",
   "/journal/create",
   "/journal/new-category",
   "/journal/edit",
@@ -31,6 +29,11 @@ const protectedRoutes = [
   "/journal/deleteSelectedCategories",
   "/journal/updateJournalCategories",
   "/journal/addCategory",
+];
+
+const privateRoutes = [
+  "/user/users",
+  "/user/delete-all",
   "/journal/delete-all",
 ];
 
@@ -69,7 +72,6 @@ export async function server() {
 
     // Middleware
     // ----------------------------------------------------
-
     app.use(logger("dev"));
     app.use(bodyParser.json());
     app.use(bodyParser.urlencoded({ extended: true }));
@@ -79,12 +81,10 @@ export async function server() {
     app.use(cors());
     app.use(passport.initialize());
     app.use(express.json());
-
-    // Router
-    // ----------------------------------------------------
-
     app.use("*", (req: Request, res: Response, next: NextFunction) => {
-      console.log("req.url", req.baseUrl);
+      if (privateRoutes.find((route) => route === req.baseUrl.toLowerCase())) {
+        return verifyAccessKey(req, res, next);
+      }
 
       if (
         protectedRoutes.find((route) => route === req.baseUrl.toLowerCase())
@@ -93,6 +93,9 @@ export async function server() {
       }
       next();
     });
+
+    // Router
+    // ----------------------------------------------------
     require("./router")(app);
     app.use("/api-docs", swaggerUi.serve);
     app.get("/api-docs", swaggerUi.setup(swaggerSpec));

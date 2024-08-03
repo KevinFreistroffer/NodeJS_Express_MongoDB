@@ -61,11 +61,16 @@ export async function findOne({
 /**
  * Find all users
  */
-export async function findAllUsers(
+export async function findAll(
+  query: Filter<IUser>,
   sanitize: true
 ): Promise<WithId<ISanitizedUser>[]>;
-export async function findAllUsers(sanitize: false): Promise<WithId<IUser>[]>;
-export async function findAllUsers(
+export async function findAll(
+  query: Filter<IUser>,
+  sanitize: false
+): Promise<WithId<IUser>[]>;
+export async function findAll(
+  query: Filter<IUser>,
   sanitize: boolean
 ): Promise<IUser[] | ISanitizedUser[] | null> {
   const client = await getClient();
@@ -73,12 +78,9 @@ export async function findAllUsers(
   try {
     await client.connect();
     const doc = await usersCollection(client)
-      .find(
-        {},
-        {
-          projection: sanitize ? UserProjection : undefined,
-        }
-      )
+      .find(query, {
+        projection: sanitize ? UserProjection : undefined,
+      })
       .toArray();
     return doc;
   } catch (error) {
@@ -87,6 +89,12 @@ export async function findAllUsers(
     await client.close();
   }
 }
+
+/**
+ * Find all users
+ * @param id
+ */
+export const findAllUsers = async () => await findAll({}, true);
 
 /**
  * Find one by ID

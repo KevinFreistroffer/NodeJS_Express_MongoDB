@@ -29,3 +29,18 @@ export const verifyToken = (
     next(); // Proceed to next middleware or route handler
   });
 };
+
+export const verifyAccessKey = (
+  req: CustomRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  const accessKey = req.headers["access-key"];
+  console.log("accessKey", accessKey);
+
+  if (typeof accessKey === "undefined" || accessKey !== config.apiAccessKey) {
+    return res.sendStatus(401);
+  }
+
+  next();
+};
