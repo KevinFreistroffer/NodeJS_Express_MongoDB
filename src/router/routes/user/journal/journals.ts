@@ -1,15 +1,15 @@
 import * as express from "express";
-import { UserProjection } from "../../../defs/models/user.model";
-import { IJournal } from "../../../defs/interfaces";
-import { usersCollection } from "../../../db";
+import { UserProjection } from "../../../../defs/models/user.model";
+import { IJournal } from "../../../../defs/interfaces";
+import { usersCollection } from "../../../../db";
 import { ObjectId } from "mongodb";
-import { verifyToken } from "../../../middleware";
+import { verifyToken } from "../../../../middleware";
 import {
   IResponseBody,
   IResponseBodyData,
   responses,
-} from "../../../defs/responses";
-import { findOne } from "../../../operations/user_operations";
+} from "../../../../defs/responses";
+import { findOne } from "../../../../operations/user_operations";
 const router = express.Router();
 
 interface IData extends IResponseBodyData {

@@ -3,10 +3,9 @@
 import express from "express";
 
 module.exports = (app: express.Express) => {
+  app.use("/auth/bearer", require("./routes/auth/bearer"));
   app.use("/user/signup", require("./routes/user/signup"));
   app.use("/user/login", require("./routes/user/login"));
-  // app.use("/auth/authenticate", require("./routes/user/authenticate")); // Need to try the verifyToken middleware idea. Consider deleting this route.
-  // app.use("/auth/auth-session", require("./routes/user/auth-session"));
   app.use("/user/forgot-password", require("./routes/user/forgot-password"));
   app.use("/user/reset-password", require("./routes/user/reset-password"));
   app.use("/user/email-available", require("./routes/user/email-available"));
@@ -14,22 +13,20 @@ module.exports = (app: express.Express) => {
     "/user/username-available",
     require("./routes/user/username-available")
   );
-
-  // TODO: consider moving these to the /protected folder
   app.use("/user/users", require("./routes/user/users"));
   app.use("/user/delete-all", require("./routes/user/delete-all"));
-  app.use("/journal/create", require("./routes/journal/create"));
-  app.use("/journal/edit", require("./routes/journal/edit"));
-  app.use("/journal/journals", require("./routes/journal/journals"));
-  app.use("/journal/delete", require("./routes/journal/delete"));
+  app.use("/journal/create", require("./routes/user/journal/create"));
+  app.use("/journal/edit", require("./routes/user/journal/edit"));
+  app.use("/journal/journals", require("./routes/user/journal/journals"));
+  app.use("/journal/delete", require("./routes/user/journal/delete"));
   app.use(
-    "/journal/category/create",
-    require("./routes/journal/category/create")
+    "/user/journal/category/create",
+    require("./routes/user/journal/category/create")
   );
-  app.use("/auth/bearer", require("./routes/auth/bearer"));
+
   app.use(
-    "/journal/bulk-set-category",
-    require("./routes/journal/bulk-set-category")
+    "/user/journal/bulk-set-category",
+    require("./routes/user/journal/bulk-set-category")
   );
 
   //These routes are not implemented yet
