@@ -5,17 +5,24 @@ import config from "../../../../src/config";
 import * as express from "express";
 
 import * as bcrypt from "bcryptjs";
-import { User } from "../../../defs/models/user.model";
-import { Types } from "mongoose";
+import { UserProjection } from "../../../defs/models/user.model";
 import { body, validationResult } from "express-validator";
 import { has } from "lodash";
 import { ISanitizedUser, IUser } from "../../../defs/interfaces";
 import {
-  IResponseBody,
-  IResponseCode,
+  IResponseBody as _IResponseBody,
+  IResponseBodyData,
   responses,
 } from "../../../defs/responses";
+import { findAll, findAllUsers } from "../../../operations/user_operations";
 const router = express.Router();
+
+interface IData extends IResponseBodyData {
+  users?: ISanitizedUser[];
+}
+interface IResponseBody extends _IResponseBody {
+  data: IData;
+}
 
 router.get(
   "/",
@@ -23,32 +30,15 @@ router.get(
     try {
       console.log("[/users] reached...");
 
-      if (config.online) {
-        // Find user by username or email
-        const doc = await User.find().exec();
+      const doc = await findAllUsers();
 
-        if (!doc) {
-          return res.json(responses.users_not_found());
-        }
-
-        return res.json({
-          ...responses.success(),
-          data: {
-            ...responses.success().data,
-            user: doc,
-          },
-        });
-      } else {
-        console.log("[/users] Offline handler.");
-
-        return res.json({
-          ...responses.success(),
-          data: {
-            ...responses.success().data,
-            user: mockUsers as any, // TODO fix
-          },
-        });
-      }
+      return res.json({
+        ...responses.success(),
+        data: {
+          ...responses.success().data,
+          users: doc,
+        },
+      });
     } catch (error) {
       console.log("[/users] Caught error. Error: ", error);
 

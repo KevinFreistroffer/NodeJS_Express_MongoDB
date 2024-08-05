@@ -1,18 +1,19 @@
 "use strict";
 
 import * as express from "express";
-import { User } from "../../../defs/models/user.model";
-
-import { Types } from "mongoose";
+import { UserProjection } from "../../../defs/models/user.model";
 import { body, validationResult } from "express-validator";
 import { IResponseBody, responses } from "../../../defs/responses";
+import { usersCollection } from "../../../db";
+import { verifyToken } from "../../../middleware";
+import { findOneByUsername } from "../../../operations/user_operations";
 const router = express.Router();
 
 router.post(
   "/",
   body("username").notEmpty().bail().isString().bail().escape(),
   async (
-    req: express.Request<never, never, { username: string }>,
+    req: express.Request<any, any, { username: string }>,
     res: express.Response<IResponseBody>
   ) => {
     try {
@@ -24,19 +25,13 @@ router.post(
         return res.status(422).json(responses.missing_body_fields());
       }
 
-      const doc = await User.findOne({
-        usernameNormalized: req.body.username.toLowerCase(),
-      }).exec();
+      const doc = await findOneByUsername(req.body.username);
       console.log("User.find by username complete ... ");
-      /*--------------------------------------------------
-       * 'Username' is already registered to a user
-       *------------------------------------------------*/
+
       if (!doc) {
         return res.json(responses.username_already_registered());
       }
-      /*--------------------------------------------------
-       * 'Username' is NOT registered to a user.
-       *------------------------------------------------*/
+
       console.log("Username is already registered.");
       console.log("doc", doc);
       return res.json(responses.username_or_email_already_registered());

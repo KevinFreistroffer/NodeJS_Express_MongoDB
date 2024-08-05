@@ -1,11 +1,12 @@
 "use strict";
 
 import * as express from "express";
-import { User } from "../../../defs/models/user.model";
-import { Types } from "mongoose";
+
 import { has } from "lodash";
 import { body } from "express-validator";
 import { IResponseBody, responses } from "../../../defs/responses";
+import { findOne, findOneByEmail } from "../../../operations/user_operations";
+
 const { query, validationResult } = require("express-validator");
 const router = express.Router();
 
@@ -13,7 +14,7 @@ router.post(
   "/",
   body("email").isEmail().bail().escape(),
   async (
-    req: express.Request<never, never, { email: string }>,
+    req: express.Request<any, any, { email: string }>,
     res: express.Response<IResponseBody>
   ) => {
     const validatedErrors = validationResult(req).array();
@@ -26,20 +27,12 @@ router.post(
       }
 
       const email = req.body.email;
-      const doc = await User.findOne({ emailNormalized: email }).exec();
+      const doc = await findOneByEmail(email);
 
-      /*--------------------------------------------------
-       * User NOT found.
-       * Email IS available.
-       *------------------------------------------------*/
       if (!doc) {
         return res.json(responses.user_not_found());
       }
 
-      /*--------------------------------------------------
-       * User found.
-       * Email is NOT available.
-       *------------------------------------------------*/
       console.log("Email is registered.");
       console.log("Found doc id", doc._id);
       return res.json(responses.email_already_registered());

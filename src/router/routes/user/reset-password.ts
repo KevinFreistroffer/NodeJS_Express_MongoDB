@@ -4,9 +4,10 @@ import * as express from "express";
 import * as nodemailer from "nodemailer";
 import config from "../../../../src/config";
 import { body, validationResult } from "express-validator";
-import { Types } from "mongoose";
-import { User } from "../../../defs/models/user.model";
+
 import { IResponseBody, responses } from "../../../defs/responses";
+import { usersCollection } from "../../../db";
+import { findOneById, updateOne } from "../../../operations/user_operations";
 const router = express.Router();
 const passwordHash = require("password-hash");
 const validatedToken = body("token")
@@ -27,7 +28,7 @@ router.post(
   validatedToken,
   validatedPassword,
   async (
-    req: express.Request<never, never, { token: string; password: string }>,
+    req: express.Request<any, any, { token: string; password: string }>,
     res: express.Response<IResponseBody>
   ) => {
     try {
@@ -37,38 +38,47 @@ router.post(
         return res.status(422).json(responses.missing_body_fields());
       }
 
-      const foundUser = await User.findOne({
-        resetPasswordToken: req.body.token,
-        resetPasswordExpires: { $gt: Date.now() },
-      }).exec();
-      console.log(foundUser);
+      // TODO: validate the JWT token. There needs to be an authentication step here prior to editing the password.
 
-      if (!foundUser) {
+      const hashedPassword = passwordHash.generate(req.body.password);
+      const doc = await updateOne(
+        {
+          resetPasswordToken: req.body.token,
+          resetPasswordExpires: { $gt: new Date(Date.now()) },
+        },
+        { password: hashedPassword }
+      );
+
+      if (!doc.matchedCount) {
         return res.status(200).json(responses.user_not_found());
+      }
+
+      if (!doc.modifiedCount) {
+        return res.status(200).json(responses.error_updating_user());
       }
 
       // Updating user object
       // TODO: sanitize the password?
-      const hashedPassword = passwordHash.generate(req.body.password);
-      foundUser.password = hashedPassword;
+      // const hashedPassword = passwordHash.generate(req.body.password);
+      // foundUser.password = hashedPassword;
       // foundUser.resetPasswordToken = undefined;
       // foundUser.resetPasswordExpires = undefined;
 
       // Send Confirmation Email
       const transporter = nodemailer.createTransport(
-        `smtps://${config.email.fromEmail}:${config.email.password}@smtp.gmail.com`
+        `smtps://${encodeURIComponent(
+          config.email.fromEmail
+        )}:${encodeURIComponent(config.email.password)}@smtp.gmail.com`
       );
 
       // setup e-mail data with unicode symbols
       const mailOptions = {
-        from: '"iBlog 👥" <kevin.freistroffer@gmail.com>', // sender address
-        to: "kevin.freistroffer@gmail.com", // list of receivers
-        subject: "Password Reset Confirmation", // Subject line
+        from: '"iBlog 👥" <kevin.freistroffer@gmail.com>',
+        to: "kevin.freistroffer@gmail.com", // TODO set this to the email
+        subject: "Password Reset Confirmation",
         text:
-          "Hello,\n\n" +
-          "This is a confirmation that the password for your account " +
-          foundUser.email +
-          " has just been changed.\n",
+          "Hi,\n\n" +
+          "This is a confirmation that the password for your account has just been changed.\n",
       };
 
       // send mail with defined transport object
