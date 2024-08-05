@@ -1,7 +1,7 @@
 "use strict";
 
 import { users as mockUsers } from "../../../data/mock_users";
-import config from "../../../../src/config";
+import config from "../../../config";
 import * as express from "express";
 
 const router = express.Router();

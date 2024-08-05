@@ -12,7 +12,7 @@ import {
   IResponseBodyData,
   responses,
 } from "../../../defs/responses";
-import { getConnectedClient, usersCollection } from "../../../db";
+import { usersCollection } from "../../../db";
 import { verifyToken } from "../../../middleware";
 import { deleteMany } from "../../../operations/user_operations";
 const router = express.Router();

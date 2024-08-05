@@ -27,19 +27,6 @@ export const getClient = () => {
   return client;
 };
 
-export const getConnectedClient = async () => {
-  const uri = getDBURI();
-  const client: MongoClient = new MongoClient(uri, {
-    serverApi: {
-      version: ServerApiVersion.v1,
-      strict: true,
-      deprecationErrors: true,
-    },
-  });
-
-  return client;
-};
-
 export const usersCollection = (client: MongoClient) => {
   const db = client.db("user-journal");
   return db.collection<IUser>("users");

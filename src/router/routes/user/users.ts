@@ -14,9 +14,6 @@ import {
   IResponseBodyData,
   responses,
 } from "../../../defs/responses";
-import { ObjectId } from "mongodb";
-import { getConnectedClient, usersCollection } from "../../../db";
-import { verifyToken } from "../../../middleware";
 import { findAll, findAllUsers } from "../../../operations/user_operations";
 const router = express.Router();
 

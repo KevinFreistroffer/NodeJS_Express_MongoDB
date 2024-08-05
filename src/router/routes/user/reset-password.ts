@@ -6,7 +6,7 @@ import config from "../../../../src/config";
 import { body, validationResult } from "express-validator";
 
 import { IResponseBody, responses } from "../../../defs/responses";
-import { getConnectedClient, usersCollection } from "../../../db";
+import { usersCollection } from "../../../db";
 import { findOneById, updateOne } from "../../../operations/user_operations";
 const router = express.Router();
 const passwordHash = require("password-hash");

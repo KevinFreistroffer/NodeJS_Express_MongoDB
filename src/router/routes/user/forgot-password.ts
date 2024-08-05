@@ -7,7 +7,7 @@ import config, { EStage } from "../../../../src/config";
 import { body, validationResult } from "express-validator";
 import { ISanitizedUser } from "../../../defs/interfaces";
 import { IResponseBody, responses } from "../../../defs/responses";
-import { getConnectedClient, usersCollection } from "../../../db";
+import { usersCollection } from "../../../db";
 import { updateOne } from "../../../operations/user_operations";
 const router = express.Router();
 let crypto = require("node:crypto");

@@ -6,7 +6,7 @@ import { InsertOneResult, WriteError } from "mongodb";
 import { UserProjection } from "../../../defs/models/user.model";
 import { body, validationResult } from "express-validator";
 import { IResponseBody, responses } from "../../../defs/responses";
-import { getConnectedClient, usersCollection } from "../../../db";
+import { usersCollection } from "../../../db";
 import { ISanitizedUser, IUser } from "../../../defs/interfaces";
 import { convertDocToSafeUser, hashPassword } from "../../../utils";
 import {
@@ -25,8 +25,6 @@ interface IRequestBody {
 
 router.post(
   "/",
-  // Consider using express-validator to validate the request body
-  // doing a user.findOne email or username. if found then throw new error
   body([
     "username",
     // "userId",
@@ -45,9 +43,6 @@ router.post(
     console.log("/user/signup reached...");
 
     try {
-      /*--------------------------------------------------
-       *  Validate request body.
-       *------------------------------------------------*/
       const validatedFields = validationResult(req);
       if (!validatedFields.isEmpty()) {
         return res.status(422).json(responses.missing_body_fields());
@@ -60,9 +55,6 @@ router.post(
         return res.json(responses.username_or_email_already_registered());
       }
 
-      /*--------------------------------------------------
-       *  Save the user
-       *------------------------------------------------*/
       const insertDoc = await insertOne({
         username,
         usernameNormalized: username.toLowerCase(),
@@ -82,11 +74,7 @@ router.post(
       const userDoc = await findOneById(insertDoc.insertedId);
 
       if (!userDoc) {
-        return res.json(
-          responses.user_not_found(
-            "Could not find the user after inserting it."
-          )
-        );
+        return res.json(responses.user_not_found());
       }
 
       return res.json(responses.success(convertDocToSafeUser(userDoc)));

@@ -1,16 +1,16 @@
 "use strict";
 
-import config from "../../../../src/config";
+import config from "../../../../config";
 import * as express from "express";
 
 import { body, validationResult } from "express-validator";
-import { IResponse } from "../../../defs/interfaces";
+import { IResponse } from "../../../../defs/interfaces";
 import { Types } from "mongoose";
-import { getConnectedClient, usersCollection } from "../../../db";
+import { usersCollection } from "../../../../db";
 import { ObjectId } from "mongodb";
-import { verifyToken } from "../../../middleware";
-import { updateOne } from "../../../operations/user_operations";
-import { IResponseBody, responses } from "../../../defs/responses";
+import { verifyToken } from "../../../../middleware";
+import { updateOne } from "../../../../operations/user_operations";
+import { IResponseBody, responses } from "../../../../defs/responses";
 
 const validatedUserId = body("userId") // TODO convert to zod?
   .notEmpty()

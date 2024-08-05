@@ -10,7 +10,7 @@ import {
 } from "../../../defs/interfaces";
 import { body, validationResult } from "express-validator";
 import { has } from "lodash";
-import { getConnectedClient, usersCollection } from "../../../db";
+import { usersCollection } from "../../../db";
 import { ObjectId } from "mongodb";
 import { verifyToken } from "../../../middleware";
 import { findOneById, updateOne } from "../../../operations/user_operations";

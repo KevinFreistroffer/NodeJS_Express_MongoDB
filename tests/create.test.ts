@@ -1,19 +1,41 @@
 import request from "supertest";
-import sinon from "sinon";
-import rewire from "rewire";
-import mongoose from "mongoose";
-let app = rewire("../server");
-const sandbox = sinon.createSandbox();
+import { getClient, usersCollection } from "../src/db";
+import { IUser } from "../src/defs/interfaces";
+import { ObjectId } from "mongodb";
+const { MongoClient } = require("mongodb");
 
-let sampleItemVal = {
-  name: "sample item",
-  price: 10,
-  rating: "5",
-  hash: "123456891",
-};
+describe("insert", () => {
+  let connection;
+  let db;
 
-test("Test", async () => {
-  const findOneStub = sandbox
-    .stub(mongoose.Model, "findOne")
-    .resolves(sampleItemVal);
-}, 15000);
+  beforeAll(async () => {
+    connection = await getClient().connect();
+  });
+
+  afterAll(async () => {
+    await connection.close();
+  });
+
+  it("should insert a doc into collection", async () => {
+    const users = await usersCollection(connection);
+
+    const mockUser = {
+      username: "username",
+      usernameNormalized: "username".toLowerCase(),
+      email: "email@gmail.com",
+      emailNormalized: "email@gmail.com",
+      password: "password",
+      resetPasswordToken: "",
+      // jwtToken: "",
+      journals: [],
+      journalCategories: [],
+    };
+
+    const doc = await users.insertOne(mockUser);
+
+    const insertedUser = await users.findOne<IUser>({
+      _id: doc.insertedId,
+    });
+    expect(insertedUser).toEqual(mockUser);
+  });
+});

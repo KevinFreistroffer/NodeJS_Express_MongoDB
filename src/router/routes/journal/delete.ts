@@ -2,7 +2,7 @@ import * as express from "express";
 import { body, validationResult } from "express-validator";
 import { IJournal, ISanitizedUser, IUser } from "../../../defs/interfaces";
 import { Types } from "mongoose";
-import { getConnectedClient, usersCollection } from "../../../db";
+import { usersCollection } from "../../../db";
 import { ObjectId } from "mongodb";
 import { verifyToken } from "../../../middleware";
 import { updateOne } from "../../../operations/user_operations";

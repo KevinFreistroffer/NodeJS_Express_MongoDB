@@ -13,7 +13,7 @@ import {
   WriteConcernError,
   WriteError,
 } from "mongodb";
-import { getClient, getConnectedClient, usersCollection } from "../db";
+import { getClient, usersCollection } from "../db";
 import { ISanitizedUser, IUser } from "../defs/interfaces";
 import { UserProjection } from "../defs/models/user.model";
 

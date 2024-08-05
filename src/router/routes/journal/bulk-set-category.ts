@@ -14,7 +14,7 @@ import {
   IResponseBodyData,
   responses,
 } from "../../../defs/responses";
-import { getConnectedClient, usersCollection } from "../../../db";
+import { usersCollection } from "../../../db";
 import { ObjectId } from "mongodb";
 import { verifyToken } from "../../../middleware";
 import { convertDocToSafeUser } from "../../../utils";

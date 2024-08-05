@@ -1,7 +1,7 @@
 import * as express from "express";
 import { UserProjection } from "../../../defs/models/user.model";
 import { IJournal } from "../../../defs/interfaces";
-import { getConnectedClient, usersCollection } from "../../../db";
+import { usersCollection } from "../../../db";
 import { ObjectId } from "mongodb";
 import { verifyToken } from "../../../middleware";
 import {
@@ -9,6 +9,7 @@ import {
   IResponseBodyData,
   responses,
 } from "../../../defs/responses";
+import { findOne } from "../../../operations/user_operations";
 const router = express.Router();
 
 interface IData extends IResponseBodyData {
@@ -34,12 +35,10 @@ router.get(
       ) {
         return res.status(422).json(responses.missing_body_fields());
       }
-      const client = await getConnectedClient();
-      const users = usersCollection(client);
-      const doc = await users.findOne(
-        { _id: new ObjectId(req.params.userId) },
-        { projection: UserProjection }
-      );
+      const doc = await findOne({
+        query: { _id: new ObjectId(req.params.userId) },
+        sanitize: true,
+      });
 
       if (!doc) {
         return res.status(404).json(responses.user_not_found());

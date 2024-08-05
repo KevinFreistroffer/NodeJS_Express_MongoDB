@@ -4,7 +4,7 @@ import * as express from "express";
 import { UserProjection } from "../../../defs/models/user.model";
 import { body, validationResult } from "express-validator";
 import { IResponseBody, responses } from "../../../defs/responses";
-import { getConnectedClient, usersCollection } from "../../../db";
+import { usersCollection } from "../../../db";
 import { verifyToken } from "../../../middleware";
 import { findOneByUsername } from "../../../operations/user_operations";
 const router = express.Router();

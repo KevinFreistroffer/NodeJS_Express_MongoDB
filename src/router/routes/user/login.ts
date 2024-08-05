@@ -16,7 +16,7 @@ import {
 } from "../../../../src/defs/responses";
 import { EMessageType } from "../../../defs/enums";
 import { ISanitizedUser, IUser } from "../../../defs/interfaces";
-import { getConnectedClient, usersCollection } from "../../../db";
+import { usersCollection } from "../../../db";
 import { convertDocToSafeUser } from "../../../utils";
 import { findOne } from "../../../operations/user_operations";
 
