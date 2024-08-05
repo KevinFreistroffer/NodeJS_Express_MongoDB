@@ -11,7 +11,7 @@ import { body, validationResult } from "express-validator";
 import { has } from "lodash";
 import {
   IResponseBody as _IResponseBody,
-  IResponseData,
+  IResponseBodyData,
   responses,
 } from "../../../../src/defs/responses";
 import { EMessageType } from "../../../defs/enums";
@@ -28,7 +28,7 @@ interface IRequestBody {
   staySignedIn?: boolean;
 }
 
-interface IData extends IResponseData {
+interface IData extends IResponseBodyData {
   jwtToken?: string;
 }
 interface IResponseBody extends _IResponseBody {

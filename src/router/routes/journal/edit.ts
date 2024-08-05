@@ -72,8 +72,7 @@ router.post(
       if (category) {
         query["journals.$.category"] = category;
       }
-      const client = await getConnectedClient();
-      const users = usersCollection(client);
+
       const doc = await updateOne(
         {
           _id: new ObjectId(userId),
@@ -84,9 +83,6 @@ router.post(
         }
         //{ new: true } // What is this?????
       );
-
-      if (!doc) {
-      }
 
       if (!doc.matchedCount) {
         return res.status(404).json(responses.user_not_found());

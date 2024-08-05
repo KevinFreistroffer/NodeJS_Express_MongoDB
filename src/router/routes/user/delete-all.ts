@@ -9,7 +9,7 @@ import { has } from "lodash";
 import { IUser } from "../../../defs/interfaces";
 import {
   IResponseBody,
-  IResponseData,
+  IResponseBodyData,
   responses,
 } from "../../../defs/responses";
 import { getConnectedClient, usersCollection } from "../../../db";
@@ -17,7 +17,7 @@ import { verifyToken } from "../../../middleware";
 import { deleteMany } from "../../../operations/user_operations";
 const router = express.Router();
 
-interface IData extends IResponseData {
+interface IData extends IResponseBodyData {
   deletedCount?: number;
 }
 

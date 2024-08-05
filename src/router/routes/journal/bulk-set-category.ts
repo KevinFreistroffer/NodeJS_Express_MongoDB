@@ -11,7 +11,7 @@ import * as express from "express";
 import { body, validationResult } from "express-validator";
 import {
   IResponseBody,
-  IResponseData,
+  IResponseBodyData,
   responses,
 } from "../../../defs/responses";
 import { getConnectedClient, usersCollection } from "../../../db";

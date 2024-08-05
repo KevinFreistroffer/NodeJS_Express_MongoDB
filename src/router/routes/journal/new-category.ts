@@ -9,6 +9,8 @@ import { Types } from "mongoose";
 import { getConnectedClient, usersCollection } from "../../../db";
 import { ObjectId } from "mongodb";
 import { verifyToken } from "../../../middleware";
+import { updateOne } from "../../../operations/user_operations";
+import { IResponseBody, responses } from "../../../defs/responses";
 
 const validatedUserId = body("userId") // TODO convert to zod?
   .notEmpty()
@@ -31,7 +33,7 @@ router.post(
   validatedJournal,
   async (
     req: express.Request<any, any, { userId: string; category: string }>,
-    res: express.Response<IResponse>
+    res: express.Response<IResponseBody>
   ) => {
     console.log("[Journal/NewCategory] POST reached");
 
@@ -43,19 +45,15 @@ router.post(
       if (!validatedFields.isEmpty()) {
         console.log("[Journal/NewCategory] Validation failed");
 
-        return res.status(422).json({
-          success: false,
-          message:
-            "Invalid request body. Make sure the userId is a valid MongoDB ObjectId.",
-          data: undefined,
-        });
+        return res.status(422).json(responses.missing_body_fields());
       }
 
       const { userId, category } = req.body;
-      const client = await getConnectedClient();
-      const users = usersCollection(client);
-      const doc = await users.updateOne(
-        { _id: new ObjectId(userId) },
+      const doc = await updateOne(
+        {
+          _id: new ObjectId(userId),
+          journalCategories: { $not: { $elemMatch: { category } } },
+        },
         {
           $addToSet: {
             journalCategories: {
@@ -63,40 +61,27 @@ router.post(
               selected: false,
             },
           },
-        },
-        { upsert: false }
+        }
       );
 
       console.log("doc", doc);
 
-      if (!doc.acknowledged) {
-        return res.json({
-          success: false,
-          message: "User not found.",
-          data: undefined,
-        });
+      if (!doc.matchedCount) {
+        return res.json(
+          responses.user_not_found(
+            "User not found, or the category already exists."
+          )
+        );
       }
 
       if (doc.modifiedCount === 0) {
-        return res.json({
-          success: true,
-          message: "Category already exists.",
-          data: undefined,
-        });
+        return res.json(responses.error_updating_user("User not updated."));
       }
 
-      return res.json({
-        success: true,
-        message: "Category saved.", // Might need to get the user, and check if the category already exists
-        data: undefined,
-      });
+      return res.json(responses.success());
     } catch (error) {
       console.log("Error while adding a category", error);
-      res.status(500).json({
-        success: false,
-        message: "Caught error: " + error,
-        data: undefined,
-      });
+      res.status(500).json(responses.caught_error(error));
     }
   }
 );
